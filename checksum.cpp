@@ -24,11 +24,11 @@
 /* How do we get the end of the text segment with this OS? */
 #undef USE_CHECKSUM
 #endif
+#include <string.h>
 
 #ifdef USE_CHECKSUM
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -261,7 +261,9 @@ void checksum(void) { return; }
 char *get_checksum(unsigned char *key, int keylen)
 {
 	Unused(key); Unused(keylen);
-	static char *foo = "Checksum Not Enabled";
+  const char text[] = "Checksum Not Enabled";
+  char *foo = new char[sizeof(text)];
+  memcpy(foo, text, sizeof(text));
 	return(foo);
 }
 #endif /* USE_CHECKSUM */

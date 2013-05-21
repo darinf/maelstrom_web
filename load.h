@@ -88,7 +88,7 @@ public:
 	}
 
 	const char *Path(const char *filename) {
-		char *directory;
+		const char *directory;
 
 		directory = getenv("MAELSTROM_LIB");
 		if ( directory == NULL ) {

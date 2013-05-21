@@ -19,7 +19,7 @@
 /* External functions used in this file */
 extern int DoInitializations(Uint32 video_flags);		/* init.cc */
 
-static char *Version =
+static const char *Version =
 "Maelstrom v1.4.3 (GPL version 3.0.6) -- 10/19/2002 by Sam Lantinga\n";
 
 // Global variables set in this file...
@@ -35,7 +35,7 @@ static ButtonList buttons;
 // Local functions in this file...
 static void DrawMainScreen(void);
 static void DrawSoundLevel(void);
-static void DrawKey(MPoint *pt, char *ch, char *str, void (*callback)(void));
+static void DrawKey(MPoint *pt, const char *ch, const char *str, void (*callback)(void));
 
 // Main Menu actions:
 static void RunDoAbout(void)
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 }	/* -- main */
 
 
-int DrawText(int x, int y, char *text, MFont *font, Uint8 style,
+int DrawText(int x, int y, const char *text, MFont *font, Uint8 style,
 					Uint8 R, Uint8 G, Uint8 B)
 {
 	SDL_Surface *textimage;
@@ -630,7 +630,7 @@ void DrawMainScreen(void)
 /* ----------------------------------------------------------------- */
 /* -- Draw the key and its function */
 
-static void DrawKey(MPoint *pt, char *key, char *text, void (*callback)(void))
+static void DrawKey(MPoint *pt, const char *key, const char *text, void (*callback)(void))
 {
 	MFont *geneva;
 

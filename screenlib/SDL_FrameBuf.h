@@ -130,7 +130,7 @@ public:
 
 	/* Area copy/dump routines */
 	SDL_Surface *GrabArea(Uint16 x, Uint16 y, Uint16 w, Uint16 h);
-	int ScreenDump(char *prefix, Uint16 x, Uint16 y, Uint16 w, Uint16 h);
+	int ScreenDump(const char *prefix, Uint16 x, Uint16 y, Uint16 w, Uint16 h);
 
 	/* Cursor handling routines */
 	void ShowCursor(void) {
