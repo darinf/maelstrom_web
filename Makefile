@@ -49,6 +49,7 @@ SOURCES= \
 	load.cpp \
 	main.cpp \
 	myerror.cpp \
+	netscore.cpp \
 	rect.cpp \
 	scores.cpp \
   screenlib/pixel.cpp \
@@ -59,6 +60,15 @@ SOURCES= \
   maclib/Mac_Wave.cpp \
   maclib/macres.cpp \
   maclib/snd2wav.cpp \
+  netlogic/about.cpp \
+  netlogic/blit.cpp \
+  netlogic/game.cpp \
+  netlogic/logic.cpp \
+  netlogic/make.cpp \
+  netlogic/netplay.cpp \
+  netlogic/object.cpp \
+  netlogic/objects.cpp \
+  netlogic/player.cpp \
   $(NULL)
 
 EXTRA_INC_PATHS=. netlogic screenlib maclib SDL

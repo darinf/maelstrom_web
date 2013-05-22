@@ -100,7 +100,7 @@ void HaltNetData(void)
 	SDLNet_Quit();
 }
 
-int AddPlayer(char *playerstr)
+int AddPlayer(const char *playerstr)
 {
 	int playernum;
 	int portnum;
@@ -471,7 +471,7 @@ static inline void MakeNewPacket(int Wave, int Lives, int Turbo,
 }
 
 /* Flash an error up on the screen and pause for 3 seconds */
-static void ErrorMessage(char *message)
+static void ErrorMessage(const char *message)
 {
 	/* Display the error message */
 	Message(message);
@@ -503,7 +503,7 @@ static int AlertServer(int *Wave, int *Lives, int *Turbo)
 	Uint32 lives, seed;
 	int waiting;
 	int status;
-	char *message = NULL;
+	const char *message = NULL;
 
 	/* Our address server connection is through TCP */
 	Message("Connecting to Address Server");
