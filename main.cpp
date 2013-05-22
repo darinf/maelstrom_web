@@ -146,7 +146,7 @@ static void RunSpeedTest(void)
 /* -- Print a Usage message and quit.
       In several places we depend on this function exiting.
  */
-static char *progname;
+static const char *progname;
 void PrintUsage(void)
 {
 	error("\nUsage: %s [-netscores] -printscores\n", progname);
@@ -165,7 +165,7 @@ void PrintUsage(void)
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
-int Maelstrom_main(int argc, char *argv[])
+int Maelstrom_main(int argc, const char *argv[])
 {
 	/* Command line flags */
 	int doprinthigh = 0;

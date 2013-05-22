@@ -29,7 +29,7 @@ static inline char *strdup(const char *str)
 #include "SDL_FrameBuf.h"
 
 /* Pathing stuff for the different operating systems */
-#if defined(unix) || defined(__MACH__)
+#if defined(unix) || defined(__MACH__) || defined(__native_client__)
 #define DIR_SEP	"/"
 #define CUR_DIR	"."
 #elif defined(WIN32)
@@ -93,11 +93,6 @@ public:
 		directory = getenv("MAELSTROM_LIB");
 		if ( directory == NULL ) {
 			directory = LIBDIR;
-#ifndef macintosh
-			if ( access(directory, F_OK) < 0 ) {
-				directory = exepath;
-			}
-#endif
 		}
 
 		if ( path != NULL )

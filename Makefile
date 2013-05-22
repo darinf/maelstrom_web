@@ -25,7 +25,7 @@ VALID_TOOLCHAINS:=newlib glibc pnacl linux win
 # If NACL_SDK_ROOT is not set, then assume it can be found relative to
 # to this Makefile.
 #
-NACL_SDK_ROOT?=$(abspath $(CURDIR)/../nacl_sdk/nacl_sdk/pepper_26)
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../nacl_sdk/nacl_sdk/pepper_28)
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 
@@ -52,13 +52,6 @@ SOURCES= \
 	netscore.cpp \
 	rect.cpp \
 	scores.cpp \
-  screenlib/pixel.cpp \
-  screenlib/SDL_FrameBuf.cpp \
-  maclib/Mac_FontServ.cpp \
-  maclib/Mac_Resource.cpp \
-  maclib/Mac_Sound.cpp \
-  maclib/Mac_Wave.cpp \
-  maclib/macres.cpp \
   netlogic/about.cpp \
   netlogic/blit.cpp \
   netlogic/game.cpp \
@@ -68,6 +61,12 @@ SOURCES= \
   netlogic/object.cpp \
   netlogic/objects.cpp \
   netlogic/player.cpp \
+  maclib/Mac_FontServ.cpp \
+  maclib/Mac_Resource.cpp \
+  maclib/Mac_Sound.cpp \
+  maclib/Mac_Wave.cpp \
+  screenlib/pixel.cpp \
+  screenlib/SDL_FrameBuf.cpp \
   port.c \
   SDL/SDL_audio.cpp \
   SDL/SDL_endian.cpp \
@@ -80,6 +79,7 @@ SOURCES= \
   SDL/SDL_thread.cpp \
   SDL/SDL_timer.cpp \
   SDL/SDL_wm.cpp \
+  ppapi/ppapi_main.cpp \
   $(NULL)
 
 EXTRA_INC_PATHS=. netlogic screenlib maclib SDL
@@ -99,7 +99,7 @@ EXTRA_INC_PATHS=. netlogic screenlib maclib SDL
 # dependencies.
 #
 DEPS=
-LIBS=$(DEPS) ppapi pthread
+LIBS=$(DEPS) ppapi_main nacl_io ppapi_cpp ppapi pthread
 
 
 #

@@ -27,9 +27,9 @@ int InitLogicData(void)
 }
 
 /* Parse logic-specific command line arguments */
-int LogicParseArgs(char ***argvptr, int *argcptr)
+int LogicParseArgs(const char ***argvptr, int *argcptr)
 {
-	char **argv = *argvptr;
+	const char **argv = *argvptr;
 	int    argc = *argcptr;
 
 	/* Check for the '-player' option */

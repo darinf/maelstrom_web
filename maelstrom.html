@@ -1,0 +1,19 @@
+<script>
+onload = function() {
+  var snippet = '<embed width="200" height="200" src="newlib/Debug/maelstrom.nmf" type="application/x-nacl">'
+
+  container.innerHTML = snippet;
+
+  document.querySelector("#container").addEventListener("message", function(e) {
+    console.log(e.data);
+  }, true);
+  document.querySelector("#container").addEventListener("load", function(e) {
+    console.log("loaded");
+  }, true);
+
+}
+</script>
+
+<body>
+<div id="container"></div>
+</body>

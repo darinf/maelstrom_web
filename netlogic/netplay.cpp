@@ -155,7 +155,7 @@ int AddPlayer(const char *playerstr)
 	return(0);
 }
 
-int SetServer(char *serverstr)
+int SetServer(const char *serverstr)
 {
 	int portnum;
 	char *host=NULL, *port=NULL;

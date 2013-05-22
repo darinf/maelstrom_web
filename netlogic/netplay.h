@@ -3,7 +3,7 @@
 extern int   InitNetData(void);
 extern void  HaltNetData(void);
 extern int   AddPlayer(const char *playerstr);
-extern int   SetServer(char *serverstr);
+extern int   SetServer(const char *serverstr);
 extern int   CheckPlayers(void);
 extern void  QueueKey(unsigned char Op, unsigned char Type);
 extern int   SyncNetwork(void);

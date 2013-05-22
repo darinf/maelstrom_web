@@ -6,7 +6,7 @@
 /* From logic.cpp */
 extern void LogicUsage(void);
 extern int  InitLogicData(void);
-extern int  LogicParseArgs(char ***argvptr, int *argcptr);
+extern int  LogicParseArgs(const char ***argvptr, int *argcptr);
 extern int  InitLogic(void);
 extern int  InitPlayerSprites(void);
 extern void HaltLogic(void);
