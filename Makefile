@@ -49,7 +49,6 @@ SOURCES= \
 	load.cpp \
 	main.cpp \
 	myerror.cpp \
-	netscore.cpp \
 	rect.cpp \
 	scores.cpp
 

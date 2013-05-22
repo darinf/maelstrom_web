@@ -139,7 +139,7 @@ public:
 	void HideCursor(void) {
 		SDL_ShowCursor(0);
 	}
-	void SetCaption(char *caption, char *icon = NULL) {
+	void SetCaption(const char *caption, const char *icon = NULL) {
 		if ( icon == NULL ) {
 			icon = caption;
 		}

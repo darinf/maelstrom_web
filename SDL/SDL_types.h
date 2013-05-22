@@ -20,19 +20,28 @@ typedef int SDLKey;
 struct SDL_keysym {
   SDLKey sym;
   int mod;
+  int unicode;
 };
 
 struct SDL_Event {
   Uint32 type;
   struct {
     SDL_keysym keysym;
+    int state;
   } key;
   struct {
     int x, y;
+    int button;
   } button;
 };
 
-struct SDL_PixelFormat;
+struct SDL_Palette {
+  SDL_Color colors[2];
+};
+
+struct SDL_PixelFormat {
+  SDL_Palette* palette;  
+};
 
 struct SDL_Rect {
   int x, y, w, h;
@@ -40,7 +49,12 @@ struct SDL_Rect {
 
 struct SDL_Surface {
   SDL_PixelFormat* format;
-  int w, h;
+  Uint32 w, h;
+  Uint32 pitch;
+  void* pixels;
+};
+
+struct SDL_RWops {
 };
 
 #endif  /* SDL_types_h_ */

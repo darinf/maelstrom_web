@@ -69,7 +69,7 @@ void SaveScores(void)
 	if ( gNetScores )
 		return;
 
-#ifdef unix
+#if 0  /*def unix*/
 	omask=umask(SCORES_PERMMASK);
 #endif
 	scores_src = SDL_RWFromFile(path.Path(MAELSTROM_SCORES), "wb");
@@ -85,7 +85,7 @@ void SaveScores(void)
 		error("Warning: Couldn't save scores to %s\n",
 						path.Path(MAELSTROM_SCORES));
 	}
-#ifdef unix
+#if 0  /*def unix*/
 	umask(omask);
 #endif
 }
@@ -185,17 +185,17 @@ static int Cancel2_callback(void) {
 
 int GetStartLevel(void)
 {
-	static char    *Ltext1 = 
+	static const char    *Ltext1 = 
 			"Enter the level to start from (1-40).  This";
-	static char    *Ltext2 = 
+	static const char    *Ltext2 = 
 			"disqualifies you from a high score...";
-	static char    *Ltext3 = "Level:";
-	static char    *Ltext4 = "Lives:";
+	static const char    *Ltext3 = "Level:";
+	static const char    *Ltext4 = "Lives:";
 	MFont *chicago;
 	Maclike_Dialog *dialog;
 	SDL_Surface *splash;
 	SDL_Surface *text1, *text2, *text3, *text4;
-	static char *turbotext = "Turbofunk On";
+	static const char *turbotext = "Turbofunk On";
 	int x, y, X, Y;
 	Mac_Button *doit;
 	Mac_Button *cancel;

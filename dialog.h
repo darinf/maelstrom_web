@@ -88,7 +88,7 @@ protected:
 	}
 
 	/* Error message */
-	virtual void SetError(char *fmt, ...) {
+	virtual void SetError(const char *fmt, ...) {
 		va_list ap;
 
 		va_start(ap, fmt);
@@ -109,7 +109,7 @@ class Mac_Button : public Mac_Dialog {
 
 public:
 	Mac_Button(int x, int y, int width, int height,
-		char *text, MFont *font, FontServ *fontserv, 
+		const char *text, MFont *font, FontServ *fontserv, 
 				int (*callback)(void));
 	virtual ~Mac_Button() {
 		SDL_FreeSurface(button);
@@ -217,7 +217,7 @@ class Mac_DefaultButton : public Mac_Button {
 
 public:
 	Mac_DefaultButton(int x, int y, int width, int height,
-				char *text, MFont *font, FontServ *fontserv, 
+				const char *text, MFont *font, FontServ *fontserv, 
 						int (*callback)(void));
 	virtual ~Mac_DefaultButton() { }
 
@@ -285,7 +285,7 @@ protected:
 class Mac_CheckBox : public Mac_Dialog {
 
 public:
-	Mac_CheckBox(int *toggle, int x, int y, char *text,
+	Mac_CheckBox(int *toggle, int x, int y, const char *text,
 				MFont *font, FontServ *fontserv);
 	virtual ~Mac_CheckBox() {
 		if ( label ) {
@@ -395,7 +395,7 @@ public:
 		}
 	}
 
-	virtual void Add_Radio(int x, int y, char *text) {
+	virtual void Add_Radio(int x, int y, const char *text) {
 		struct radio *radio;
 
 		for ( radio=&radio_list; radio->next; radio=radio->next )
