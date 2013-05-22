@@ -69,6 +69,7 @@ SOURCES= \
   netlogic/object.cpp \
   netlogic/objects.cpp \
   netlogic/player.cpp \
+  port.c \
   $(NULL)
 
 EXTRA_INC_PATHS=. netlogic screenlib maclib SDL

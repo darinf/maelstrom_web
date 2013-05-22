@@ -5,6 +5,9 @@
 
 #include "SDL_types.h"
 
+struct SDL_RWops {
+};
+
 const char* SDL_GetError();
 void SDL_SetError(const char*);
 
