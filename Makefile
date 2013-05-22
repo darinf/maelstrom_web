@@ -59,7 +59,6 @@ SOURCES= \
   maclib/Mac_Sound.cpp \
   maclib/Mac_Wave.cpp \
   maclib/macres.cpp \
-  maclib/snd2wav.cpp \
   netlogic/about.cpp \
   netlogic/blit.cpp \
   netlogic/game.cpp \
@@ -70,6 +69,17 @@ SOURCES= \
   netlogic/objects.cpp \
   netlogic/player.cpp \
   port.c \
+  SDL/SDL_audio.cpp \
+  SDL/SDL_endian.cpp \
+  SDL/SDL_event.cpp \
+  SDL/SDL_init.cpp \
+  SDL/SDL_mutex.cpp \
+  SDL/SDL_net.cpp \
+  SDL/SDL_rwops.cpp \
+  SDL/SDL_surface.cpp \
+  SDL/SDL_thread.cpp \
+  SDL/SDL_timer.cpp \
+  SDL/SDL_wm.cpp \
   $(NULL)
 
 EXTRA_INC_PATHS=. netlogic screenlib maclib SDL

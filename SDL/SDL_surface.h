@@ -1,6 +1,8 @@
 #ifndef SDL_surface_h_
 #define SDL_surface_h_
 
+#include "SDL_types.h"
+
 enum {
   SDL_SWSURFACE = 1 << 0,
   SDL_HWSURFACE = 1 << 1,
