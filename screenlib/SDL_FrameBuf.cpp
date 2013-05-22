@@ -63,7 +63,7 @@ FrameBuf:: FrameBuf()
 	itail = &images;
 }
 
-static void PrintSurface(char *title, SDL_Surface *surface)
+static void PrintSurface(const char *title, SDL_Surface *surface)
 {
 #ifdef FRAMEBUF_DEBUG
 	fprintf(stderr, "%s:\n", title);
@@ -614,7 +614,7 @@ FrameBuf:: GrabArea(Uint16 x, Uint16 y, Uint16 w, Uint16 h)
 }
 
 int
-FrameBuf:: ScreenDump(char *prefix, Uint16 x, Uint16 y, Uint16 w, Uint16 h)
+FrameBuf:: ScreenDump(const char *prefix, Uint16 x, Uint16 y, Uint16 w, Uint16 h)
 {
 	SDL_Surface *dump;
 	int retval;

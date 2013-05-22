@@ -36,11 +36,20 @@ struct SDL_Event {
 };
 
 struct SDL_Palette {
-  SDL_Color colors[2];
+  SDL_Color* colors;
+  int ncolors;
 };
 
 struct SDL_PixelFormat {
   SDL_Palette* palette;  
+  int Rshift;
+  int Gshift;
+  int Bshift;
+  int Rmask;
+  int Gmask;
+  int Bmask;
+  int BitsPerPixel;
+  int BytesPerPixel;
 };
 
 struct SDL_Rect {
@@ -48,10 +57,12 @@ struct SDL_Rect {
 };
 
 struct SDL_Surface {
+  int refcount;
   SDL_PixelFormat* format;
   Uint32 w, h;
   Uint32 pitch;
   void* pixels;
+  int flags;
 };
 
 struct SDL_RWops {

@@ -92,7 +92,7 @@ protected:
 	Uint32  base;				/* The offset of the rsrc */
 
 	/* Useful for getting error feedback */
-	void error(char *fmt, ...) {
+	void error(const char *fmt, ...) {
 		va_list ap;
 
 		va_start(ap, fmt);

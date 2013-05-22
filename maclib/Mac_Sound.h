@@ -195,7 +195,7 @@ printf("Freeing Wave id %hu at hash page %d/%d\n",(upper<<8)|lower,upper,lower);
 	}
 
 	/* Useful for getting error feedback */
-	void error(char *fmt, ...) {
+	void error(const char *fmt, ...) {
 		va_list ap;
 
 		va_start(ap, fmt);

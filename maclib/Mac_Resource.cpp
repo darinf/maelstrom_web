@@ -173,7 +173,8 @@ static void CheckMacBinary(FILE *resfile, Uint32 *resbase)
 }
 static FILE *Open_MacRes(char **original, Uint32 *resbase)
 {
-	char *filename, *dirname, *basename, *ptr, *newname;
+	char *filename, *basename, *ptr, *newname;
+  const char *dirname;
 	FILE *resfile=NULL;
 
 	/* Search and replace characters */

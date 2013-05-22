@@ -3,6 +3,8 @@
 
 /* placeholder */
 
+#include "SDL_rwops.h"
+#include "SDL_timer.h"
 #include "SDL_types.h"
 
 /* values */
@@ -15,7 +17,14 @@ enum {
 
 enum {
   SDL_SWSURFACE = 1 << 0,
-  SDL_FULLSCREEN = 1 << 1,
+  SDL_HWSURFACE = 1 << 1,
+  SDL_HWACCEL = 1 << 2,
+  SDL_FULLSCREEN = 1 << 3,
+};
+
+enum {
+  SDL_SRCCOLORKEY = 1 << 0,
+  SDL_RLEACCEL = 1 << 1,
 };
 
 enum {
@@ -43,6 +52,7 @@ enum {
   SDLK_9,
   SDLK_x,
   SDLK_z,
+  SDLK_F1,
   SDLK_F3,
   SDLK_LSHIFT,
   SDLK_RSHIFT,
@@ -79,30 +89,30 @@ int SDL_PollEvent(SDL_Event*);
 int SDL_WaitEvent(SDL_Event*);
 const char* SDL_GetKeyName(SDLKey);
 
+SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags);
 SDL_Surface* SDL_GetVideoSurface();
 SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int depth, int a, int b, int c, int d);
 void SDL_FreeSurface(SDL_Surface*);
 void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect);
-SDL_Surface* SDL_LoadBMP(const char* path);
+void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect);
+int SDL_LockSurface(SDL_Surface*);
+void SDL_UnlockSurface(SDL_Surface*);
+void SDL_UpdateRects(SDL_Surface*, int num_rects, SDL_Rect* rects);
 
-const char* SDL_GetError();
-void SDL_SetError(const char*);
+SDL_Surface* SDL_LoadBMP(const char* path);
+int SDL_SaveBMP(SDL_Surface*, const char* path);
+
+void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*);
+
+void SDL_SetColorKey(SDL_Surface*, int flags, Uint8);
+void SDL_SetColors(SDL_Surface*, SDL_Color* colors, int offset, int count);
+Uint32 SDL_MapRGB(SDL_PixelFormat*, Uint8 r, Uint8 g, Uint8 b);
 
 int SDL_WM_ToggleFullScreen(SDL_Surface*);
 void SDL_WM_SetCaption(const char* title, const char* icon);
+void SDL_WM_SetIcon(SDL_Surface*, const Uint8* mask);
 
-void SDL_ShowCursor(bool);
-void SDL_EnableUNICODE(bool);
-
-void SDL_Delay(Uint32);
-Uint32 SDL_GetTicks();
-
-SDL_RWops* SDL_RWFromFile(const char* path, const char* mode);
-void SDL_RWclose(SDL_RWops*);
-Uint16 SDL_ReadBE16(SDL_RWops*);
-Uint32 SDL_ReadBE32(SDL_RWops*);
-Uint32 SDL_RWread(SDL_RWops*, void* buf, Uint32 size, Uint32 count);
-Uint32 SDL_RWwrite(SDL_RWops*, const void* buf, Uint32 size, Uint32 count);
-Uint32 SDL_WriteBE32(SDL_RWops*, Uint32);
+int SDL_ShowCursor(int);
+void SDL_EnableUNICODE(int);
 
 #endif  /* SDL_h_ */

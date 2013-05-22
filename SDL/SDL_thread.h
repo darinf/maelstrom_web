@@ -5,4 +5,7 @@
 
 struct SDL_Thread;
 
+SDL_Thread* SDL_CreateThread(int (*func)(void* userdata), void* userdata);
+void SDL_WaitThread(SDL_Thread*, int*);
+
 #endif  /* SDL_thread_h_ */

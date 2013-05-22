@@ -50,9 +50,18 @@ SOURCES= \
 	main.cpp \
 	myerror.cpp \
 	rect.cpp \
-	scores.cpp
+	scores.cpp \
+  screenlib/pixel.cpp \
+  screenlib/SDL_FrameBuf.cpp \
+  maclib/Mac_FontServ.cpp \
+  maclib/Mac_Resource.cpp \
+  maclib/Mac_Sound.cpp \
+  maclib/Mac_Wave.cpp \
+  maclib/macres.cpp \
+  maclib/snd2wav.cpp \
+  $(NULL)
 
-EXTRA_INC_PATHS=netlogic screenlib maclib SDL
+EXTRA_INC_PATHS=. netlogic screenlib maclib SDL
 
 
 #

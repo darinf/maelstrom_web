@@ -104,7 +104,7 @@ private:
 			Uint8 **samples, Uint32 n_samples, Uint8 s_size);
 	
 	/* Useful for getting error feedback */
-	void error(char *fmt, ...) {
+	void error(const char *fmt, ...) {
 		va_list ap;
 
 		va_start(ap, fmt);

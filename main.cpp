@@ -165,7 +165,7 @@ void PrintUsage(void)
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
-int main(int argc, char *argv[])
+int Maelstrom_main(int argc, char *argv[])
 {
 	/* Command line flags */
 	int doprinthigh = 0;
@@ -651,7 +651,7 @@ static void DrawKey(MPoint *pt, const char *key, const char *text, void (*callba
 }	/* -- DrawKey */
 
 
-void Message(char *message)
+void Message(const char *message)
 {
 	static MFont *font;
 	static int xOff;
