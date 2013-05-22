@@ -149,14 +149,14 @@ static void RunSpeedTest(void)
 static const char *progname;
 void PrintUsage(void)
 {
-	error("\nUsage: %s [-netscores] -printscores\n", progname);
+	error("\nUsage: %s [--netscores] --printscores\n", progname);
 	error("or\n");
 	error("Usage: %s <options>\n\n", progname);
 	error("Where <options> can be any of:\n\n"
-"	-fullscreen		# Run Maelstrom in full-screen mode\n"
-"	-gamma [0-8]		# Set the gamma correction\n"
-"	-volume [0-8]		# Set the sound volume\n"
-"	-netscores		# Use the world-wide network score server\n"
+"	--fullscreen		# Run Maelstrom in full-screen mode\n"
+"	--gamma [0-8]		# Set the gamma correction\n"
+"	--volume [0-8]		# Set the sound volume\n"
+"	--netscores		# Use the world-wide network score server\n"
 	);
 	LogicUsage();
 	error("\n");
@@ -193,10 +193,10 @@ int Maelstrom_main(int argc, const char *argv[])
 
 	/* Parse command line arguments */
 	for ( progname=argv[0]; --argc; ++argv ) {
-		if ( strcmp(argv[1], "-fullscreen") == 0 ) {
+		if ( strcmp(argv[1], "--fullscreen") == 0 ) {
 			video_flags |= SDL_FULLSCREEN;
 		} else
-		if ( strcmp(argv[1], "-gamma") == 0 ) {
+		if ( strcmp(argv[1], "--gamma") == 0 ) {
 			int gammacorrect;
 
 			if ( ! argv[2] ) {  /* Print the current gamma */
@@ -217,7 +217,7 @@ int Maelstrom_main(int argc, const char *argv[])
 			++argv;
 			--argc;
 		}
-		else if ( strcmp(argv[1], "-volume") == 0 ) {
+		else if ( strcmp(argv[1], "--volume") == 0 ) {
 			int volume;
 
 			if ( ! argv[2] ) {  /* Print the current volume */
@@ -239,20 +239,20 @@ int Maelstrom_main(int argc, const char *argv[])
 		}
 #define CHECKSUM_DEBUG
 #ifdef CHECKSUM_DEBUG
-		else if ( strcmp(argv[1], "-checksum") == 0 ) {
+		else if ( strcmp(argv[1], "--checksum") == 0 ) {
 			mesg("Checksum = %s\n", get_checksum(NULL, 0));
 			exit(0);
 		}
 #endif /* CHECKSUM_DEBUG */
-		else if ( strcmp(argv[1], "-printscores") == 0 )
+		else if ( strcmp(argv[1], "--printscores") == 0 )
 			doprinthigh = 1;
-		else if ( strcmp(argv[1], "-netscores") == 0 )
+		else if ( strcmp(argv[1], "--netscores") == 0 )
 			gNetScores = 1;
-		else if ( strcmp(argv[1], "-speedtest") == 0 )
+		else if ( strcmp(argv[1], "--speedtest") == 0 )
 			speedtest = 1;
 		else if ( LogicParseArgs(&argv, &argc) == 0 ) {
 			/* LogicParseArgs() took care of everything */;
-		} else if ( strcmp(argv[1], "-version") == 0 ) {
+		} else if ( strcmp(argv[1], "--version") == 0 ) {
 			error("%s", Version);
 			exit(0);
 		} else {

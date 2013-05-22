@@ -1,5 +1,7 @@
 #include "SDL_net.h"
 
+#include <string.h>
+
 int SDLNet_Init() { return 0; }
 void SDLNet_Quit() {}
 
@@ -22,7 +24,13 @@ int SDLNet_CheckSockets(SDLNet_SocketSet, int) { return 0; }
 
 const IPaddress* SDLNet_UDP_GetPeerAddress(UDPsocket, int) { return 0; }
 
-UDPpacket* SDLNet_AllocPacket(Uint32 size) { return 0; }
+UDPpacket* SDLNet_AllocPacket(Uint32 size) {
+  UDPpacket* packet = new UDPpacket;
+  memset(packet, 0, sizeof(*packet));
+  packet->data = new Uint8[size];
+  packet->maxlen = size;
+  return packet;
+}
 
 void SDLNet_Write32(Uint32, const Uint8*) {}
 Uint32 SDLNet_Read32(Uint8*) { return 0; }

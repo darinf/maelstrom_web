@@ -9,9 +9,9 @@
 void LogicUsage(void)
 {
 	error(
-"	-player N[@host][:port]	# Designate player N (at host and/or port)\n"
-"	-server N@host[:port]	# Play with N players using server at host\n"
-"	-deathmatch [N]		# Play deathmatch to N frags (default = 8)\n"
+"	--player N[@host][:port]	# Designate player N (at host and/or port)\n"
+"	--server N@host[:port]	# Play with N players using server at host\n"
+"	--deathmatch [N]		# Play deathmatch to N frags (default = 8)\n"
 	);
 }
 
@@ -33,7 +33,7 @@ int LogicParseArgs(const char ***argvptr, int *argcptr)
 	int    argc = *argcptr;
 
 	/* Check for the '-player' option */
-	if ( strcmp(argv[1], "-player") == 0 ) {
+	if ( strcmp(argv[1], "--player") == 0 ) {
 		if ( ! argv[2] ) {
 			error(
 			"The '-player' option requires an argument!\n");
@@ -47,9 +47,9 @@ int LogicParseArgs(const char ***argvptr, int *argcptr)
 	}
 
 	/* Check for the '-server' option */
-	if ( strcmp(argv[1], "-server") == 0 ) {
+	if ( strcmp(argv[1], "--server") == 0 ) {
 		if ( ! argv[2] ) {
-			error("The '-server' option requires an argument!\n");
+			error("The '--server' option requires an argument!\n");
 			PrintUsage();
 		}
 		if ( SetServer(argv[2]) < 0 )
@@ -60,7 +60,7 @@ int LogicParseArgs(const char ***argvptr, int *argcptr)
 	}
 
 	/* Check for the '-deathmatch' option */
-	if ( strcmp(argv[1], "-deathmatch") == 0 ) {
+	if ( strcmp(argv[1], "--deathmatch") == 0 ) {
 		if ( argv[2] && ((gDeathMatch=atoi(argv[2])) > 0) ) {
 			++(*argvptr);
 			--(*argcptr);
