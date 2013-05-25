@@ -1,13 +1,13 @@
 <script>
-onload = function() {
-  var snippet = '<embed width="200" height="200" src="newlib/Debug/maelstrom.nmf" type="application/x-nacl">'
+function Init() {
+  var container = document.querySelector("#container");
 
-  container.innerHTML = snippet;
+  container.innerHTML = '<embed width="200" height="200" src="newlib/Debug/maelstrom.nmf" type="application/x-nacl">'
 
-  document.querySelector("#container").addEventListener("message", function(e) {
+  container.addEventListener("message", function(e) {
     console.log(e.data);
   }, true);
-  document.querySelector("#container").addEventListener("load", function(e) {
+  container.addEventListener("load", function(e) {
     console.log("loaded");
   }, true);
 
@@ -16,4 +16,5 @@ onload = function() {
 
 <body>
 <div id="container"></div>
+<script>Init()</script>
 </body>
