@@ -1,8 +1,72 @@
 <script>
+// Library
+
+var kRequestedFSQuota = 5 * 1024 * 1024;
+
+function ErrorHandler(e) {
+  console.log("Error: " + e);
+}
+
+function WriteBlob(blob, path, dir, callback) {
+  webkitRequestFileSystem(window.TEMPORARY, kRequestedFSQuota,
+    function(fs) {  // success
+      fs.root.getDirectory(dir, {create: true},
+        function(dir) {
+          dir.getFile(path, {create: true},
+          function(entry) {
+            entry.createWriter(function(writer) {
+              writer.onwriteend = function() {
+                console.log("Wrote: " + path + " (" + blob.size + " bytes)");
+                callback();
+              }
+              writer.onerror = ErrorHandler;
+              writer.write(blob);
+            },
+            ErrorHandler);
+          },
+          ErrorHandler);
+        },
+        ErrorHandler);
+    },
+    ErrorHandler);
+}
+
+function FetchBlob(path, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = "blob";
+  xhr.onload = function() {
+    callback(xhr.response);
+  }
+  xhr.open("GET", path, true);
+  xhr.send(null);
+}
+
+// Application
+
+var kResourceFiles = [
+  "newlib/Debug/maelstrom.nmf",
+  "newlib/Debug/maelstrom_x86_64.nexe",
+  "Maelstrom-Scores",
+  "Maelstrom_Fonts",
+];
+
+var resourcesFetched = 0;
+
+function Fetch(path) {
+  FetchBlob(path, function(blob) {
+    var parts = path.split("/");
+    var filename = parts[parts.length - 1];
+    WriteBlob(blob, filename, "Maelstrom", function() {
+      if (++resourcesFetched == kResourceFiles.length)
+        Init();
+    });
+  });
+}
+
 function Init() {
   var container = document.querySelector("#container");
 
-  container.innerHTML = '<embed width="200" height="200" src="newlib/Debug/maelstrom.nmf" type="application/x-nacl">'
+  container.innerHTML = '<embed width="200" height="200" src="filesystem:http://localhost:5103/temporary/Maelstrom/maelstrom.nmf" type="application/x-nacl">'
 
   container.addEventListener("message", function(e) {
     console.log(e.data);
@@ -10,11 +74,27 @@ function Init() {
   container.addEventListener("load", function(e) {
     console.log("loaded");
   }, true);
-
 }
+
+onload = function() {
+  kResourceFiles.forEach(Fetch);
+  
+/*
+  // Force load of latest NEXE.
+  xhr = new XMLHttpRequest();
+  xhr.onload = function() {
+    delete xhr;
+    Init();
+  }
+  xhr.open("GET", "newlib/Debug/maelstrom_x86_64.nexe", true);
+  xhr.setRequestHeader("Cache-Control", "max-age=0");
+  xhr.send(null);
+*/
+//  Init();
+}
+
 </script>
 
 <body>
 <div id="container"></div>
-<script>Init()</script>
 </body>

@@ -32,8 +32,9 @@
 Note: Most of the info in this file came from "Inside Macintosh"
 */
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include "SDL/SDL_rwops.h"
 
 /* The actual resources in the resource fork */
 typedef struct {
@@ -88,7 +89,7 @@ protected:
 		struct resource *list;
 	} *Resources;
 
-	FILE   *filep;				/* The Resource Fork File */
+	SDL_RWops   *filep;				/* The Resource Fork File */
 	Uint32  base;				/* The offset of the rsrc */
 
 	/* Useful for getting error feedback */

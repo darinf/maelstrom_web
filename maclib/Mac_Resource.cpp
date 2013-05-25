@@ -32,7 +32,6 @@ Note: Most of the info in this file came from "Inside Macintosh"
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL_types.h"
 #include "bitesex.h"
 #include "Mac_Resource.h"
 
@@ -121,18 +120,15 @@ int Res_cmp(const void *A, const void *B)
    This function may be overkill, but I want to be able to find any Macintosh
    resource fork, darn it! :)
 */
-static void CheckAppleFile(FILE *resfile, Uint32 *resbase)
+static void CheckAppleFile(SDL_RWops *resfile, Uint32 *resbase)
 {
 	ASHeader header;
-	if (fread(&header.magicNum,sizeof(header.magicNum),1,resfile)&&
+	if (SDL_RWread(resfile,&header.magicNum,sizeof(header.magicNum),1)&&
 		(bytesex32(header.magicNum) == APPLEDOUBLE_MAGIC) ) {
-		fread(&header.versionNum,
-				sizeof(header.versionNum), 1, resfile);
+		SDL_RWread(resfile, &header.versionNum, sizeof(header.versionNum), 1);
 		bytesex32(header.versionNum);
-		fread(&header.filler,
-				sizeof(header.filler), 1, resfile);
-		fread(&header.numEntries,
-				sizeof(header.numEntries), 1, resfile);
+		SDL_RWread(resfile, &header.filler, sizeof(header.filler), 1);
+		SDL_RWread(resfile, &header.numEntries, sizeof(header.numEntries), 1);
 		bytesex16(header.numEntries);
 #ifdef APPLEDOUBLE_DEBUG
 mesg("Header magic: 0x%.8x, version 0x%.8x\n",
@@ -145,7 +141,7 @@ mesg("Number of entries: %d, sizeof(entry) = %d\n",
 			header.numEntries, sizeof(entry));
 #endif
 		for ( int i = 0; i<header.numEntries; ++ i ) {
-			if (! fread(&entry, sizeof(entry), 1, resfile))
+			if (! SDL_RWread(resfile, &entry, sizeof(entry), 1))
 				break;
 			bytesex32(entry.entryID);
 			bytesex32(entry.entryOffset);
@@ -160,22 +156,22 @@ mesg("Entry (%d): ID = 0x%.8x, Offset = %d, Length = %d\n",
 			}
 		}
 	}
-	fseek(resfile, 0, SEEK_SET);
+	SDL_RWseek(resfile, 0, SEEK_SET);
 }
-static void CheckMacBinary(FILE *resfile, Uint32 *resbase)
+static void CheckMacBinary(SDL_RWops *resfile, Uint32 *resbase)
 {
 	MBHeader header;
-	if (fread(header.data,sizeof(header.data),1,resfile)&&
+	if (SDL_RWread(resfile,header.data,sizeof(header.data),1)&&
 		((header.Version()&MACBINARY_MASK) == MACBINARY_MAGIC) ) {
 		*resbase = sizeof(header.data) + header.DataLength();
 	}
-	fseek(resfile, 0, SEEK_SET);
+	SDL_RWseek(resfile, 0, SEEK_SET);
 }
-static FILE *Open_MacRes(char **original, Uint32 *resbase)
+static SDL_RWops *Open_MacRes(char **original, Uint32 *resbase)
 {
 	char *filename, *basename, *ptr, *newname;
   const char *dirname;
-	FILE *resfile=NULL;
+	SDL_RWops *resfile=NULL;
 
 	/* Search and replace characters */
 	const int N_SNRS = 2;
@@ -199,7 +195,7 @@ static FILE *Open_MacRes(char **original, Uint32 *resbase)
 		basename = filename;
 	}
 
-	for ( iterations=0; iterations < N_SNRS; ++iterations ) {
+	for ( iterations=1; iterations < N_SNRS; ++iterations ) {
 		/* Translate ' ' into '_', etc */
 		/* Note that this translation is irreversible */
 		for ( ptr = basename; *ptr; ++ptr ) {
@@ -207,29 +203,33 @@ static FILE *Open_MacRes(char **original, Uint32 *resbase)
 				*ptr = snr[iterations].replace;
 		}
 
+#if 0
 		/* First look for Executor (tm) resource forks */
 		newname = new char[strlen(dirname)+2+1+strlen(basename)+1];
 		sprintf(newname, "%s%s%%%s", dirname, (*dirname ? "/" : ""),
 								basename);
-		if ( (resfile=fopen(newname, "rb")) != NULL ) {
+		if ( (resfile=SDL_RWFromFile(newname, "rb")) != NULL ) {
 			break;
 		}
 		delete[] newname;
+#endif
 
+#if 0
 		/* Look for MacBinary files */
 		newname = new char[strlen(dirname)+2+strlen(basename)+4+1];
 		sprintf(newname, "%s%s%s.bin", dirname, (*dirname ? "/" : ""),
 								basename);
-		if ( (resfile=fopen(newname, "rb")) != NULL ) {
+		if ( (resfile=SDL_RWFromFile(newname, "rb")) != NULL ) {
 			break;
 		}
 		delete[] newname;
+#endif
 
 		/* Look for raw resource fork.. */
 		newname = new char[strlen(dirname)+2+strlen(basename)+1];
 		sprintf(newname, "%s%s%s", dirname, (*dirname ? "/" : ""),
 								basename);
-		if ( (resfile=fopen(newname, "rb")) != NULL ) {
+		if ( (resfile=SDL_RWFromFile(newname, "rb")) != NULL ) {
 			break;
 		}
 	}
@@ -275,9 +275,9 @@ Mac_Resource:: Mac_Resource(const char *file)
 		/* Open_MacRes() passes back the real name of resource file */
 		delete[] filename;
 	}
-	fseek(filep, base, SEEK_SET);
+	SDL_RWseek(filep, base, SEEK_SET);
 
-	if ( ! fread(&Header, sizeof(Header), 1, filep) ) {
+	if ( ! SDL_RWread(filep, &Header, sizeof(Header), 1) ) {
 		error("Couldn't read resource info from '%s'", filename);
 		return;
 	}
@@ -287,8 +287,8 @@ Mac_Resource:: Mac_Resource(const char *file)
 	bytesex32(Header.map_length);
 	bytesex32(Header.map_offset);
 
-	fseek(filep, base+Header.map_offset, SEEK_SET);
-	if ( ! fread(&Map, sizeof(Map), 1, filep) ) {
+	SDL_RWseek(filep, base+Header.map_offset, SEEK_SET);
+	if ( ! SDL_RWread(filep, &Map, sizeof(Map), 1) ) {
 		error("Couldn't read resource info from '%s'", filename);
 		return;
 	}
@@ -304,9 +304,9 @@ Mac_Resource:: Mac_Resource(const char *file)
 		Resources[i].list = NULL;
 
 	ref_offsets = new Uint16[num_types];
-	fseek(filep, base+Header.map_offset+Map.types_offset+2, SEEK_SET);
+	SDL_RWseek(filep, base+Header.map_offset+Map.types_offset+2, SEEK_SET);
 	for ( i=0; i<num_types; ++i ) {
-		if ( ! fread(&type_ent, sizeof(type_ent), 1, filep) ) {
+		if ( ! SDL_RWread(filep, &type_ent, sizeof(type_ent), 1) ) {
 			error("Couldn't read resource info from '%s'",
 								filename);
 			delete[] ref_offsets;
@@ -328,11 +328,11 @@ Mac_Resource:: Mac_Resource(const char *file)
 	}
 
 	for ( i=0; i<num_types; ++i ) {
-		fseek(filep, 
-		base+Header.map_offset+Map.types_offset+ref_offsets[i],
+		SDL_RWseek(filep,
+               base+Header.map_offset+Map.types_offset+ref_offsets[i],
 								SEEK_SET);
 		for ( n=0; n<Resources[i].count; ++n ) {
-			if ( ! fread(&ref_ent, sizeof(ref_ent), 1, filep) ) {
+			if ( ! SDL_RWread(filep, &ref_ent, sizeof(ref_ent), 1) ) {
 				error("Couldn't read resource info from '%s'",
 								filename);
 				delete[] ref_offsets;
@@ -351,16 +351,15 @@ Mac_Resource:: Mac_Resource(const char *file)
 				Resources[i].list[n].name = new char[1];
 				Resources[i].list[n].name[0] = '\0';
 			} else {
-				cur_offset = ftell(filep);
-				fseek(filep, 
+				cur_offset = SDL_RWtell(filep);
+				SDL_RWseek(filep, 
 		base+Header.map_offset+Map.names_offset+ref_ent.Name_offset,
 								SEEK_SET);
-				fread(&name_len, 1, 1, filep);
+				SDL_RWread(filep, &name_len, 1, 1);
 				Resources[i].list[n].name=new char[name_len+1];
-				fread(Resources[i].list[n].name,
-							1, name_len, filep);
+				SDL_RWread(filep, Resources[i].list[n].name, 1, name_len);
 				Resources[i].list[n].name[name_len] = '\0';
-				fseek(filep, cur_offset, SEEK_SET);
+				SDL_RWseek(filep, cur_offset, SEEK_SET);
 			}
 		}
 #ifndef macintosh
@@ -375,7 +374,7 @@ Mac_Resource:: Mac_Resource(const char *file)
 Mac_Resource:: ~Mac_Resource()
 {
 	if ( filep )
-		fclose(filep);
+		SDL_RWclose(filep);
 
 	if ( ! Resources )
 		return;
@@ -473,11 +472,11 @@ Mac_Resource:: Resource(const char *res_type, Uint16 id)
 
 					/* Load it */
 					d = new Mac_ResData;
-					fseek(filep, base+res_offset+Resources[i].list[n].offset, SEEK_SET);
-					fread(&d->length, 4, 1, filep);
+					SDL_RWseek(filep, base+res_offset+Resources[i].list[n].offset, SEEK_SET);
+					SDL_RWread(filep, &d->length, 4, 1);
 					bytesex32(d->length);
 					d->data = new Uint8[d->length];
-					if (!fread(d->data,d->length,1,filep)) {
+					if (!SDL_RWread(filep, d->data,d->length,1)) {
 						delete[] d->data;
 						error("Couldn't read %d bytes", d->length);
 						delete d;
@@ -510,11 +509,11 @@ Mac_Resource:: Resource(const char *res_type, const char *name)
 
 					/* Load it */
 					d = new Mac_ResData;
-					fseek(filep, base+res_offset+Resources[i].list[n].offset, SEEK_SET);
-					fread(&d->length, 4, 1, filep);
+					SDL_RWseek(filep, base+res_offset+Resources[i].list[n].offset, SEEK_SET);
+					SDL_RWread(filep, &d->length, 4, 1);
 					bytesex32(d->length);
 					d->data = new Uint8[d->length];
-					if (!fread(d->data,d->length,1,filep)) {
+					if (!SDL_RWread(filep, d->data,d->length,1)) {
 						delete[] d->data;
 						error("Couldn't read %d bytes", d->length);
 						delete d;

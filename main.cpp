@@ -256,7 +256,6 @@ int Maelstrom_main(int argc, const char *argv[])
 			error("%s", Version);
 			exit(0);
 		} else {
-      fprintf(stderr, "Unknown arg: %s\n", argv[1]);
 			/*PrintUsage();*/
 		}
 	}

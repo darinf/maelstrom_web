@@ -19,5 +19,7 @@ Uint32 SDL_RWread(SDL_RWops*, void* buf, Uint32 size, Uint32 count);
 Uint32 SDL_RWwrite(SDL_RWops*, const void* buf, Uint32 size, Uint32 count);
 Uint32 SDL_WriteBE32(SDL_RWops*, Uint32);
 Uint32 SDL_WriteLE32(SDL_RWops*, Uint32);
+Uint32 SDL_RWseek(SDL_RWops*, Sint32 offset, int whence);
+Uint32 SDL_RWtell(SDL_RWops*);
 
 #endif  /* SDL_rwops_h_ */

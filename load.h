@@ -47,7 +47,7 @@ static inline char *strdup(const char *str)
 
 #ifndef LIBDIR
 #if defined(unix) || defined(__MACH__)
-#define LIBDIR	"/usr/local/lib/Maelstrom"
+#define LIBDIR	"/Maelstrom"
 #else
 #define LIBDIR	CUR_DIR
 #endif
