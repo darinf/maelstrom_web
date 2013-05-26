@@ -80,9 +80,10 @@ SOURCES= \
   SDL/SDL_timer.cpp \
   SDL/SDL_wm.cpp \
   ppapi/ppapi_main.cpp \
+  ppapi/ppb.cpp \
   $(NULL)
 
-EXTRA_INC_PATHS=. netlogic screenlib maclib SDL
+EXTRA_INC_PATHS=. netlogic screenlib maclib SDL ppapi
 
 
 #
