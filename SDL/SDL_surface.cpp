@@ -9,6 +9,8 @@ namespace {
 
 //----
 
+const int kBMPHeaderSize = 2 + 6*4 + 2*2 + 6*4;
+
 struct BMPFileHeader { 
   Uint16 type; 
   Uint32 size; 
@@ -201,30 +203,64 @@ void SDL_UnlockSurface(SDL_Surface* surface) {
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
-  fprintf(stderr, "SDL_UpdateRects [%p num=%u]\n", surface, num_rects);
+  fprintf(stderr, "SDL_UpdateRects [%p num=%u]", surface, num_rects);
   for (int i = 0; i < num_rects; ++i)
-    fprintf(stderr, "  (%u,%u,%u,%u) ", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
-  if (num_rects)
-    fprintf(stderr, "\n");
+    fprintf(stderr, " (%u,%u,%u,%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+  fprintf(stderr, "\n");
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
-  fprintf(stderr, "SDL_LoadBMP [\"%s\"]\n", path);
+  //fprintf(stderr, "SDL_LoadBMP [\"%s\"]\n", path);
 
   SDL_RWops* ops = SDL_RWFromFile(path, "rb");
   if (!ops)
     return NULL;
   BMPFileHeader header;
   ReadBitmapHeader(ops, &header);
+
+  int palette_size = header.bitmap_offset - kBMPHeaderSize;
+  Uint8* palette_data = new Uint8[palette_size];
+  SDL_RWread(ops, palette_data, 1, palette_size);
+
+  int data_size = header.size - header.bitmap_offset;
+  Uint8* bitmap_data = new Uint8[data_size];
+  SDL_RWread(ops, bitmap_data, 1, data_size);
+
   SDL_RWclose(ops);
 
-  if (header.bits_per_pixel != 8) {
-    fprintf(stderr, "SDL_LoadBMP: can only handle 8 bit depth!\n");
-    return NULL;
-  }
+  IndexedImpl* impl = NULL;
+  do {
+    if (header.bits_per_pixel != 8) {
+      fprintf(stderr, "SDL_LoadBMP: can only handle 8 bit depth!\n");
+      break;
+    }
+    if (header.compression != 0) {
+      fprintf(stderr, "SDL_LoadBMP: can only handle uncompressed data!\n");
+      break;
+    }
 
-  IndexedImpl* impl = new IndexedImpl(header.width, header.height, SDL_SWSURFACE);
-  // XXX need to copy palette and pixels
+    //fprintf(stderr, "  (num_colors=%u, palette_size=%u)\n", header.num_colors, palette_size);
+
+    impl = new IndexedImpl(header.width, header.height, SDL_SWSURFACE);
+
+    // Copy palette over
+    for (int i = 0; i < header.num_colors; ++i) {
+      Uint8* color_data = palette_data + i*4;
+      impl->format->palette->colors[i].r = color_data[0];
+      impl->format->palette->colors[i].g = color_data[1];
+      impl->format->palette->colors[i].b = color_data[2];
+    }
+
+    // Copy pixels over
+    for (int row = 0; row < header.height; ++row) {
+      Uint8* src_row = bitmap_data + row * header.width;
+      Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * header.width;
+      memcpy(dst_row, src_row, header.width);
+    }
+  } while (false);
+
+  delete[] palette_data;
+  delete[] bitmap_data;
   return impl;
 }
 
