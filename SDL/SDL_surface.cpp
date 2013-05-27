@@ -103,13 +103,18 @@ IndexedImpl::~IndexedImpl() {
 
 //----
 
+Uint8* IndexedPixelsAt(SDL_Surface* surface, int x, int y) {
+  Uint8* pixels = static_cast<Uint8*>(surface->pixels);
+  return pixels + surface->pitch * y + x;
+}
+
+//----
+
 Impl* video_surface = NULL;
 
 }  // namespace
 
 SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags) {
-  fprintf(stderr, "SDL_SetVideoMode\n");
-
   if (video_surface) {
     fprintf(stderr, "SDL_SetVideoMode: video surface already initialized!\n");
     return NULL;
@@ -131,10 +136,8 @@ SDL_Surface* SDL_GetVideoSurface() {
 }
 
 SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int depth, int a, int b, int c, int d) {
-  fprintf(stderr, "SDL_CreateRGBSurface [%ux%u, depth=%u]\n", width, height, depth);
-
   if (depth != 8) {
-    fprintf(stderr, "SDL_CreateRGBSurface: only 8 bit color depth is supported!\n");
+    fprintf(stderr, "SDL_CreateRGBSurface [depth=%u]: only 8 bit color depth is supported!\n", depth);
     return NULL;
   }
 
@@ -150,25 +153,59 @@ void SDL_FreeSurface(SDL_Surface* surface) {
     delete impl;
 }
 
-void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {
-  fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dest);
+void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
+  fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dst);
 }
 
-void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {
-  fprintf(stderr, "SDL_LowerBlit [src=%p, dst=%p]\n", src, dest);
+void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
+/*
+  fprintf(stderr, "SDL_LowerBlit [src=%p, src_rect=(%u,%u,%u,%u), dst=%p, dst_rect=(%u,%u,%u,%u)]\n",
+      src,
+      src_rect->x,
+      src_rect->y,
+      src_rect->w,
+      src_rect->h,
+      dst,
+      dst_rect->x,
+      dst_rect->y,
+      dst_rect->w,
+      dst_rect->h);
+*/
+
+  if (src_rect->w != dst_rect->w ||
+      src_rect->h != dst_rect->h) {
+    fprintf(stderr, "SDL_LowerBlit: width and height of src and dst much match!\n");
+    return;
+  }
+
+  if (src->format->BitsPerPixel != 8 ||
+      dst->format->BitsPerPixel != 8) {
+    fprintf(stderr, "SDL_LowerBlit: src and dst must both be 8 bit depth!\n");
+    return;
+  }
+
+  for (int row = 0; row < src_rect->h; ++row) {
+    memcpy(IndexedPixelsAt(dst, dst_rect->x, dst_rect->y + row),
+           IndexedPixelsAt(src, src_rect->x, src_rect->y + row),
+           src_rect->w);
+  }
 }
 
 int SDL_LockSurface(SDL_Surface* surface) {
-  fprintf(stderr, "SDL_LockSurface [%p]\n", surface);
+  //fprintf(stderr, "SDL_LockSurface [%p]\n", surface);
   return 0;
 }
 
 void SDL_UnlockSurface(SDL_Surface* surface) {
-  fprintf(stderr, "SDL_UnlockSurface [%p]\n", surface);
+  //fprintf(stderr, "SDL_UnlockSurface [%p]\n", surface);
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
-  fprintf(stderr, "SDL_UpdateRects [%p]\n", surface);
+  fprintf(stderr, "SDL_UpdateRects [%p num=%u]\n", surface, num_rects);
+  for (int i = 0; i < num_rects; ++i)
+    fprintf(stderr, "  (%u,%u,%u,%u) ", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+  if (num_rects)
+    fprintf(stderr, "\n");
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
@@ -197,7 +234,7 @@ int SDL_SaveBMP(SDL_Surface* surface, const char* path) {
 }
 
 void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*) {
-  fprintf(stderr, "SDL_SetGammaRamp\n");
+  //fprintf(stderr, "SDL_SetGammaRamp\n");
 }
 
 void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
@@ -220,8 +257,6 @@ void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
 }
 
 void SDL_SetColors(SDL_Surface* surface, SDL_Color* colors, int offset, int count) {
-  fprintf(stderr, "SDL_SetColors [%p]\n", surface);
-
   for (int i = 0; i < count; ++i)
     surface->format->palette->colors[i + offset] = colors[i];
 }

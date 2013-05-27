@@ -1,6 +1,7 @@
 #include "SDL_rwops.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 #include <ppapi_main/ppapi_main.h>
@@ -33,8 +34,16 @@ bool Impl::Open(PP_Resource file_ref, const char* mode) {
   if (!file_io_)
     return false;
 
+  PP_FileOpenFlags open_flags;
+  if (!strcmp(mode, "rb") || !strcmp(mode, "r")) {
+    open_flags = PP_FILEOPENFLAG_READ;
+  } else {
+    fprintf(stderr, "mode=%s\n", mode);
+    return false;
+  }
+
   int32_t rv = ppb.file_io->Open(
-      file_io_, file_ref, PP_FILEOPENFLAG_READ, PP_BlockUntilComplete());
+      file_io_, file_ref, open_flags, PP_BlockUntilComplete());
   if (rv != PP_OK) {
     ppb.core->ReleaseResource(file_io_);
     file_io_ = 0;
