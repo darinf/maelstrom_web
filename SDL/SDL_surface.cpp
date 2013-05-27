@@ -116,6 +116,7 @@ Uint8* IndexedPixelsAt(SDL_Surface* surface, int x, int y) {
 //----
 
 IndexedImpl* video_surface = NULL;
+PP_Resource graphics_2d = 0;
 
 }  // namespace
 
@@ -129,6 +130,13 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
     fprintf(stderr, "SDL_SetVideoMode: only 8 bit color depth is supported!\n");
     return NULL;
   }
+
+  PP_Size size;
+  size.width = width;
+  size.height = height;
+  graphics_2d = ppb.graphics_2d->Create(PPAPI_GetInstanceId(), &size, PP_TRUE);
+
+  ppb.instance->BindGraphics(PPAPI_GetInstanceId(), graphics_2d);
 
   video_surface = new IndexedImpl(width, height, video_flags);
   return video_surface;
@@ -264,7 +272,11 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     }
 
     // Now, flush to display
-    //ppb.graphics_2d->PaintImageData();
+    PP_Point top_left;
+    top_left.x = rects[i].x;
+    top_left.y = rects[i].y;
+    ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
+    ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
 
     ppb.image_data->Unmap(image_data);
 
