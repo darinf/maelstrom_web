@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "SDL_rwops.h"
 
 #include <ppapi_main/ppapi_main.h>
@@ -110,7 +111,7 @@ IndexedImpl::~IndexedImpl() {
 
 Uint8* IndexedPixelsAt(SDL_Surface* surface, int x, int y) {
   Uint8* pixels = static_cast<Uint8*>(surface->pixels);
-  return pixels + surface->pitch * y + x;
+  return pixels + (surface->pitch * y) + x;
 }
 
 //----
@@ -143,8 +144,6 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
 }
 
 SDL_Surface* SDL_GetVideoSurface() {
-  fprintf(stderr, "SDL_GetVideoSurface\n");
-
   return video_surface;
 }
 
@@ -167,7 +166,8 @@ void SDL_FreeSurface(SDL_Surface* surface) {
 }
 
 void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
-  fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dst);
+  //fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dst);
+  SDL_LowerBlit(src, src_rect, dst, dst_rect);
 }
 
 void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
@@ -214,10 +214,12 @@ void SDL_UnlockSurface(SDL_Surface* surface) {
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
+/*
   fprintf(stderr, "SDL_UpdateRects [%p num=%u]", surface, num_rects);
   for (int i = 0; i < num_rects; ++i)
     fprintf(stderr, " (%u,%u,%u,%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
   fprintf(stderr, "\n");
+*/
 
   if (surface != video_surface) {
     fprintf(stderr, "SDL_UpdateRects: can only be called on the video surface!\n");
@@ -241,6 +243,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     ppb.image_data->Describe(image_data, &image_desc);
 
     void* image_pixels = ppb.image_data->Map(image_data);
+    Uint32* image_pixels_end = (Uint32*) (((Uint8*) image_pixels) + image_desc.size.height * image_desc.stride);
 
     //fprintf(stderr, "about to copy pixels [size=(%u,%u), stride=%u, pixels=%p]\n", image_desc.size.width, image_desc.size.height, image_desc.stride, image_pixels); fflush(stderr);
 
@@ -252,7 +255,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
       //fprintf(stderr, "about to write row [%u] of pixels\n", row); fflush(stderr);
       
       for (int col = 0; col < rects[i].w; ++col) {
-        Uint8 index = src_pixels[col + rects[i].x];
+        Uint8 index = src_pixels[col];
         SDL_Color color = surface->format->palette->colors[index];
 
         Uint32 packed_color;
@@ -267,7 +270,8 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
 
         // XXX
         //fprintf(stderr, "writing dst_pixels [row=%d, col=%d]\n", row, col); fflush(stderr);
-        *reinterpret_cast<Uint32*>(dst_pixels + col) = packed_color;
+        Uint32* dst_ptr = reinterpret_cast<Uint32*>(dst_pixels + (4 * col));
+        *dst_ptr = packed_color;
       }
     }
 
@@ -275,6 +279,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     PP_Point top_left;
     top_left.x = rects[i].x;
     top_left.y = rects[i].y;
+    //fprintf(stderr, "PaintImageData(x=%u,y=%u,w=%u,h=%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
     ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
 
     ppb.image_data->Unmap(image_data);
