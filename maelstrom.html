@@ -38,6 +38,7 @@ function FetchBlob(path, callback) {
     callback(xhr.response);
   }
   xhr.open("GET", path, true);
+  xhr.setRequestHeader("Cache-Control", "max-age=0");
   xhr.send(null);
 }
 
@@ -49,6 +50,7 @@ var kResourceFiles = [
   "Maelstrom-Scores",
   "Maelstrom_Fonts",
   "Maelstrom_Sounds",
+  "icon.bmp",
 ];
 
 var resourcesFetched = 0;
