@@ -5,6 +5,9 @@
 #include <string.h>
 #include "SDL_rwops.h"
 
+#include <ppapi_main/ppapi_main.h>
+#include "ppb.h"
+
 namespace {
 
 //----
@@ -112,7 +115,7 @@ Uint8* IndexedPixelsAt(SDL_Surface* surface, int x, int y) {
 
 //----
 
-Impl* video_surface = NULL;
+IndexedImpl* video_surface = NULL;
 
 }  // namespace
 
@@ -207,6 +210,66 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
   for (int i = 0; i < num_rects; ++i)
     fprintf(stderr, " (%u,%u,%u,%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
   fprintf(stderr, "\n");
+
+  if (surface != video_surface) {
+    fprintf(stderr, "SDL_UpdateRects: can only be called on the video surface!\n");
+    return;
+  }
+
+  PP_ImageDataFormat image_format = ppb.image_data->GetNativeImageDataFormat();
+
+  for (int i = 0; i < num_rects; ++i) {
+    PP_Size size;
+    size.width = rects[i].w;
+    size.height = rects[i].h;
+
+    PP_Resource image_data = ppb.image_data->Create(
+        PPAPI_GetInstanceId(),
+        image_format,
+        &size,
+        PP_FALSE);
+
+    PP_ImageDataDesc image_desc;
+    ppb.image_data->Describe(image_data, &image_desc);
+
+    void* image_pixels = ppb.image_data->Map(image_data);
+
+    //fprintf(stderr, "about to copy pixels [size=(%u,%u), stride=%u, pixels=%p]\n", image_desc.size.width, image_desc.size.height, image_desc.stride, image_pixels); fflush(stderr);
+
+    // Copy pixels
+    for (int row = 0; row < rects[i].h; ++row) {
+      Uint8* src_pixels = IndexedPixelsAt(surface, rects[i].x, rects[i].y + row);
+      Uint8* dst_pixels = static_cast<Uint8*>(image_pixels) + row * image_desc.stride;
+
+      //fprintf(stderr, "about to write row [%u] of pixels\n", row); fflush(stderr);
+      
+      for (int col = 0; col < rects[i].w; ++col) {
+        Uint8 index = src_pixels[col + rects[i].x];
+        SDL_Color color = surface->format->palette->colors[index];
+
+        Uint32 packed_color;
+        switch (image_format) {
+          case PP_IMAGEDATAFORMAT_BGRA_PREMUL:
+            packed_color = color.b | (color.g << 8) | (color.r << 16);
+            break;
+          default:
+            fprintf(stderr, "Oops: need code for image format!\n");
+            return;
+        }
+
+        // XXX
+        //fprintf(stderr, "writing dst_pixels [row=%d, col=%d]\n", row, col); fflush(stderr);
+        *reinterpret_cast<Uint32*>(dst_pixels + col) = packed_color;
+      }
+    }
+
+    // Now, flush to display
+    //ppb.graphics_2d->PaintImageData();
+
+    ppb.image_data->Unmap(image_data);
+
+    ppb.core->ReleaseResource(image_data);
+  }
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {

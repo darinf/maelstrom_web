@@ -13,5 +13,11 @@ bool PPB_Init() {
       PPAPI_GetInterface(PPB_FILEREF_INTERFACE));
   ppb.file_system = reinterpret_cast<const PPB_FileSystem*>(
       PPAPI_GetInterface(PPB_FILESYSTEM_INTERFACE));
+  ppb.graphics_2d = reinterpret_cast<const PPB_Graphics2D*>(
+      PPAPI_GetInterface(PPB_GRAPHICS_2D_INTERFACE));
+  ppb.image_data = reinterpret_cast<const PPB_ImageData*>(
+      PPAPI_GetInterface(PPB_IMAGEDATA_INTERFACE));
+  ppb.instance = reinterpret_cast<const PPB_Instance*>(
+      PPAPI_GetInterface(PPB_INSTANCE_INTERFACE));
   return true;
 }
