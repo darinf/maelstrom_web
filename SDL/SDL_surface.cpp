@@ -276,12 +276,12 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     top_left.x = rects[i].x;
     top_left.y = rects[i].y;
     ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
-    ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
 
     ppb.image_data->Unmap(image_data);
-
     ppb.core->ReleaseResource(image_data);
   }
+
+  ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
@@ -328,7 +328,8 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 
     // Copy pixels over
     for (int row = 0; row < header.height; ++row) {
-      Uint8* src_row = bitmap_data + row * header.width;
+      // bitmap_data rows are flipped upside down.
+      Uint8* src_row = bitmap_data + (header.height - row - 1) * header.width;
       Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * header.width;
       memcpy(dst_row, src_row, header.width);
     }
