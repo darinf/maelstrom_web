@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "SDL_rwops.h"
 
 namespace {
@@ -60,32 +61,119 @@ Impl::Impl() {
   flags = 0;
 }
 
+struct IndexedImpl : Impl {
+  IndexedImpl(int w, int h, Uint32 flags);
+  ~IndexedImpl();
+
+  SDL_PixelFormat format_;
+  SDL_Palette palette_;
+  SDL_Color palette_colors_[256];
+  int transparent_color_;
+};
+
+IndexedImpl::IndexedImpl(int w, int h, Uint32 flags) {
+  this->w = w;
+  this->h = h;
+  this->pitch = w;
+  this->flags = flags;
+
+  pixels = new Uint8[w * h];
+
+  format = &format_;
+  format->BitsPerPixel = 8;
+  format->BytesPerPixel = 1;
+  format->Rshift = 0;
+  format->Gshift = 0;
+  format->Bshift = 0;
+  format->Rmask = 0;
+  format->Gmask = 0;
+  format->Bmask = 0;
+  format->palette = &palette_;
+  format->palette->colors = palette_colors_;
+  format->palette->ncolors = 256;
+
+  memset(palette_colors_, 0, sizeof(palette_colors_));
+
+  transparent_color_ = -1;
+}
+
+IndexedImpl::~IndexedImpl() {
+  delete[] (Uint8*) pixels;
+}
+
+//----
+
+Impl* video_surface = NULL;
+
 }  // namespace
 
-SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags) { return 0; }
-SDL_Surface* SDL_GetVideoSurface() { return 0; }
-SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int depth, int a, int b, int c, int d) { return 0; }
+SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags) {
+  fprintf(stderr, "SDL_SetVideoMode\n");
+
+  if (video_surface) {
+    fprintf(stderr, "SDL_SetVideoMode: video surface already initialized!\n");
+    return NULL;
+  }
+
+  if (depth != 8) {
+    fprintf(stderr, "SDL_SetVideoMode: only 8 bit color depth is supported!\n");
+    return NULL;
+  }
+
+  video_surface = new IndexedImpl(width, height, video_flags);
+  return video_surface;
+}
+
+SDL_Surface* SDL_GetVideoSurface() {
+  fprintf(stderr, "SDL_GetVideoSurface\n");
+
+  return video_surface;
+}
+
+SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int depth, int a, int b, int c, int d) {
+  fprintf(stderr, "SDL_CreateRGBSurface [%ux%u, depth=%u]\n", width, height, depth);
+
+  if (depth != 8) {
+    fprintf(stderr, "SDL_CreateRGBSurface: only 8 bit color depth is supported!\n");
+    return NULL;
+  }
+
+  return new IndexedImpl(width, height, video_flags);
+}
 
 void SDL_FreeSurface(SDL_Surface* surface) {
   if (!surface)
     return;
 
-#if 0
   Impl* impl = static_cast<Impl*>(surface);
   if (--impl->refcount == 0)
     delete impl;
-#endif
 }
 
-void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {}
-void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {}
-int SDL_LockSurface(SDL_Surface*) { return 0; }
-void SDL_UnlockSurface(SDL_Surface*) {}
-void SDL_UpdateRects(SDL_Surface*, int num_rects, SDL_Rect* rects) {}
+void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {
+  fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dest);
+}
+
+void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dest, SDL_Rect* dst_rect) {
+  fprintf(stderr, "SDL_LowerBlit [src=%p, dst=%p]\n", src, dest);
+}
+
+int SDL_LockSurface(SDL_Surface* surface) {
+  fprintf(stderr, "SDL_LockSurface [%p]\n", surface);
+  return 0;
+}
+
+void SDL_UnlockSurface(SDL_Surface* surface) {
+  fprintf(stderr, "SDL_UnlockSurface [%p]\n", surface);
+}
+
+void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
+  fprintf(stderr, "SDL_UpdateRects [%p]\n", surface);
+}
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
-  fprintf(stderr, "SDL_LoadBMP\n");
-#if 0
+  fprintf(stderr, "SDL_LoadBMP [\"%s\"]\n", path);
+
   SDL_RWops* ops = SDL_RWFromFile(path, "rb");
   if (!ops)
     return NULL;
@@ -93,21 +181,65 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
   ReadBitmapHeader(ops, &header);
   SDL_RWclose(ops);
 
-  fprintf(stderr, "bmp_header.width = %d\n", header.width);
-  fprintf(stderr, "bmp_header.width = %d\n", header.height);
+  if (header.bits_per_pixel != 8) {
+    fprintf(stderr, "SDL_LoadBMP: can only handle 8 bit depth!\n");
+    return NULL;
+  }
 
-  fflush(stderr);
-
-  Impl* impl = new Impl();
+  IndexedImpl* impl = new IndexedImpl(header.width, header.height, SDL_SWSURFACE);
+  // XXX need to copy palette and pixels
   return impl;
-#endif
-  return NULL;
 }
 
-int SDL_SaveBMP(SDL_Surface*, const char* path) { return 0; }
+int SDL_SaveBMP(SDL_Surface* surface, const char* path) {
+  fprintf(stderr, "SDL_SaveBMP [%p, \"%s\"]\n", surface, path);
+  return 0;
+}
 
-void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*) {}
+void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*) {
+  fprintf(stderr, "SDL_SetGammaRamp\n");
+}
 
-void SDL_SetColorKey(SDL_Surface*, int flags, Uint8) {}
-void SDL_SetColors(SDL_Surface*, SDL_Color* colors, int offset, int count) {}
-Uint32 SDL_MapRGB(SDL_PixelFormat*, Uint8 r, Uint8 g, Uint8 b) { return 0; }
+void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
+  if (surface->format->BitsPerPixel != 8) {
+    fprintf(stderr, "SDL_SetColorKey: only supported for 8 bit depth!\n");
+    return;
+  }
+
+  IndexedImpl* impl = static_cast<IndexedImpl*>(surface);
+
+  if (flags == 0) {
+    impl->transparent_color_ = -1;
+  } else {
+    if (key < surface->format->palette->ncolors) {
+      impl->transparent_color_ = key;
+    } else {
+      fprintf(stderr, "SDL_SetColorKey: invalid color index!\n");
+    }
+  }
+}
+
+void SDL_SetColors(SDL_Surface* surface, SDL_Color* colors, int offset, int count) {
+  fprintf(stderr, "SDL_SetColors [%p]\n", surface);
+
+  for (int i = 0; i < count; ++i)
+    surface->format->palette->colors[i + offset] = colors[i];
+}
+
+Uint32 SDL_MapRGB(SDL_PixelFormat* format, Uint8 r, Uint8 g, Uint8 b) {
+  if (format->BitsPerPixel != 8) {
+    fprintf(stderr, "SDL_MapRGB: only know how to handle 8 bit depth!\n");
+    return 0;
+  }
+
+  for (int i = 0; i < format->palette->ncolors; ++i) {
+    if (format->palette->colors[i].r == r &&
+        format->palette->colors[i].g == g &&
+        format->palette->colors[i].b == b)
+      return i;
+  }
+
+  fprintf(stderr, "SDL_MapRGB: didn't find an exact match!\n");
+
+  return 0;
+}

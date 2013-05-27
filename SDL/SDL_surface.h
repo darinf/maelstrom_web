@@ -26,23 +26,23 @@ struct SDL_Palette {
 
 struct SDL_PixelFormat {
   SDL_Palette* palette;  
+  int BitsPerPixel;
+  int BytesPerPixel;
   int Rshift;
   int Gshift;
   int Bshift;
   int Rmask;
   int Gmask;
   int Bmask;
-  int BitsPerPixel;
-  int BytesPerPixel;
 };
 
 struct SDL_Surface {
   int refcount;
   SDL_PixelFormat* format;
-  Uint32 w, h;
-  Uint32 pitch;
+  int w, h;
+  Uint16 pitch;
   void* pixels;
-  int flags;
+  Uint32 flags;
 };
 
 SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags);
@@ -60,7 +60,7 @@ int SDL_SaveBMP(SDL_Surface*, const char* path);
 
 void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*);
 
-void SDL_SetColorKey(SDL_Surface*, int flags, Uint8);
+void SDL_SetColorKey(SDL_Surface*, Uint32 flags, Uint32 key);
 void SDL_SetColors(SDL_Surface*, SDL_Color* colors, int offset, int count);
 Uint32 SDL_MapRGB(SDL_PixelFormat*, Uint8 r, Uint8 g, Uint8 b);
 
