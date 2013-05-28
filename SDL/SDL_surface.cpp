@@ -232,13 +232,13 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
     return;
   }
 
-  // Assume it is sufficient to copy pixel values (indices) without adjusting
-  // for palette differences.
 
   Impl* src_impl = static_cast<Impl*>(src);
 
   if (src->format->BitsPerPixel == 8 &&
       dst->format->BitsPerPixel == 8) {
+    // Assume palettes match!
+
     for (int row = 0; row < src_rect->h; ++row) {
       if (src_impl->color_key_ == -1) {
         memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
@@ -255,6 +255,17 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
     }
   } else if (src->format->BitsPerPixel == 1 &&
              dst->format->BitsPerPixel == 8) {
+    // Map src palette to dst palette.
+    Uint8 mapped_colors[2];
+    mapped_colors[0] = (Uint8) SDL_MapRGB(dst->format,
+                                          src->format->palette->colors[0].r,
+                                          src->format->palette->colors[0].g,
+                                          src->format->palette->colors[0].b);
+    mapped_colors[1] = (Uint8) SDL_MapRGB(dst->format,
+                                          src->format->palette->colors[1].r,
+                                          src->format->palette->colors[1].g,
+                                          src->format->palette->colors[1].b);
+
     for (int row = 0; row < src_rect->h; ++row) {
       Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
       Uint8* src_pixels_row_start =
@@ -262,7 +273,7 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
       for (int col = 0; col < src_rect->w; ++col) {
         Uint8 src_pixel = Index1PixelAt(src_pixels_row_start, dst_rect->x + col);
         if (src_pixel != src_impl->color_key_)
-          dst_pixels[col] = src_pixel;
+          dst_pixels[col] = mapped_colors[src_pixel];
       }
     }
   }
@@ -449,14 +460,37 @@ Uint32 SDL_MapRGB(SDL_PixelFormat* format, Uint8 r, Uint8 g, Uint8 b) {
     return 0;
   }
 
+  Uint32 best_index = 0;
+  Uint32 best_diff = -1;
+
   for (int i = 0; i < format->palette->ncolors; ++i) {
-    if (format->palette->colors[i].r == r &&
-        format->palette->colors[i].g == g &&
-        format->palette->colors[i].b == b)
-      return i;
+    const SDL_Color& color = format->palette->colors[i];
+    
+    Uint32 diff = 0;
+    if (color.r > r) {
+      diff += color.r - r;
+    } else {
+      diff += r - color.r;
+    }
+    if (color.g > g) {
+      diff += color.g - g;
+    } else {
+      diff += g - color.g;
+    }
+    if (color.b > b) {
+      diff += color.b - b;
+    } else {
+      diff += b - color.b;
+    }
+
+    if (diff < best_diff) {
+      best_diff = diff;
+      best_index = i;
+    }
+
+    if (best_diff == 0)
+      break;
   }
 
-  fprintf(stderr, "SDL_MapRGB: didn't find an exact match!\n");
-
-  return 0;
+  return best_index;
 }
