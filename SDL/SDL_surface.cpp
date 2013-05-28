@@ -54,36 +54,77 @@ void ReadBitmapHeader(SDL_RWops* ops, BMPFileHeader* header) {
 //----
 
 struct Impl : SDL_Surface {
-  Impl();
+  Impl(int w, int h, int flags);
+  ~Impl();
+
+  int color_key_;
 };
 
-Impl::Impl() {
+Impl::Impl(int w, int h, int flags) {
   refcount = 1;
   format = NULL;
-  w = 0;
-  h = 0;
+  this->w = w;
+  this->h = h;
   pitch = 0;
   pixels = NULL;
-  flags = 0;
+  this->flags = flags;
+  color_key_ = -1;
 }
 
-struct IndexedImpl : Impl {
-  IndexedImpl(int w, int h, Uint32 flags);
-  ~IndexedImpl();
+Impl::~Impl() {
+  free(pixels);
+}
+
+struct Index1Impl : Impl {
+  Index1Impl(int w, int h, Uint32 flags);
+
+  SDL_PixelFormat format_;
+  SDL_Palette palette_;
+  SDL_Color palette_colors_[2];
+};
+
+Index1Impl::Index1Impl(int w, int h, Uint32 flags)
+    : Impl(w, h, flags) {
+  pitch = w / 8;
+  if (w % 8)
+    pitch++;
+
+  pixels = malloc(pitch * h);
+
+  format = &format_;
+  format->BitsPerPixel = 1;
+  format->BytesPerPixel = 0;  // ??
+  format->Rshift = 0;
+  format->Gshift = 0;
+  format->Bshift = 0;
+  format->Rmask = 0;
+  format->Gmask = 0;
+  format->Bmask = 0;
+  format->palette = &palette_;
+  format->palette->colors = palette_colors_;
+  format->palette->ncolors = 2;
+
+  memset(palette_colors_, 0, sizeof(palette_colors_));
+  palette_colors_[0].r = 0xFF;
+  palette_colors_[0].g = 0xFF;
+  palette_colors_[0].b = 0xFF;
+  palette_colors_[1].r = 0x00;
+  palette_colors_[1].g = 0x00;
+  palette_colors_[1].b = 0x00;
+}
+
+struct Index8Impl : Impl {
+  Index8Impl(int w, int h, Uint32 flags);
 
   SDL_PixelFormat format_;
   SDL_Palette palette_;
   SDL_Color palette_colors_[256];
-  int transparent_color_;
 };
 
-IndexedImpl::IndexedImpl(int w, int h, Uint32 flags) {
-  this->w = w;
-  this->h = h;
-  this->pitch = w;
-  this->flags = flags;
-
-  pixels = new Uint8[w * h];
+Index8Impl::Index8Impl(int w, int h, Uint32 flags)
+    : Impl(w, h, flags) {
+  pitch = w;
+  pixels = malloc(pitch * h);
 
   format = &format_;
   format->BitsPerPixel = 8;
@@ -99,24 +140,22 @@ IndexedImpl::IndexedImpl(int w, int h, Uint32 flags) {
   format->palette->ncolors = 256;
 
   memset(palette_colors_, 0, sizeof(palette_colors_));
-
-  transparent_color_ = -1;
-}
-
-IndexedImpl::~IndexedImpl() {
-  delete[] (Uint8*) pixels;
 }
 
 //----
 
-Uint8* IndexedPixelsAt(SDL_Surface* surface, int x, int y) {
+Uint8* Index8PixelsAt(SDL_Surface* surface, int x, int y) {
   Uint8* pixels = static_cast<Uint8*>(surface->pixels);
   return pixels + (surface->pitch * y) + x;
 }
 
+Uint8 Index1PixelAt(const Uint8* row_start, int x) {
+  return (row_start[x / 8] >> (7 - x % 8)) & 1;
+}
+
 //----
 
-IndexedImpl* video_surface = NULL;
+Index8Impl* video_surface = NULL;
 PP_Resource graphics_2d = 0;
 
 }  // namespace
@@ -139,7 +178,7 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
 
   ppb.instance->BindGraphics(PPAPI_GetInstanceId(), graphics_2d);
 
-  video_surface = new IndexedImpl(width, height, video_flags);
+  video_surface = new Index8Impl(width, height, video_flags);
   return video_surface;
 }
 
@@ -148,12 +187,14 @@ SDL_Surface* SDL_GetVideoSurface() {
 }
 
 SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int depth, int a, int b, int c, int d) {
-  if (depth != 8) {
-    fprintf(stderr, "SDL_CreateRGBSurface [depth=%u]: only 8 bit color depth is supported!\n", depth);
-    return NULL;
+  switch (depth) {
+    case 1:
+      return new Index1Impl(width, height, video_flags);
+    case 8:
+      return new Index8Impl(width, height, video_flags);
   }
-
-  return new IndexedImpl(width, height, video_flags);
+  fprintf(stderr, "SDL_CreateRGBSurface [depth=%u]: unsupported color depth!\n", depth);
+  return NULL;
 }
 
 void SDL_FreeSurface(SDL_Surface* surface) {
@@ -191,16 +232,39 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
     return;
   }
 
-  if (src->format->BitsPerPixel != 8 ||
-      dst->format->BitsPerPixel != 8) {
-    fprintf(stderr, "SDL_LowerBlit: src and dst must both be 8 bit depth!\n");
-    return;
-  }
+  // Assume it is sufficient to copy pixel values (indices) without adjusting
+  // for palette differences.
 
-  for (int row = 0; row < src_rect->h; ++row) {
-    memcpy(IndexedPixelsAt(dst, dst_rect->x, dst_rect->y + row),
-           IndexedPixelsAt(src, src_rect->x, src_rect->y + row),
-           src_rect->w);
+  Impl* src_impl = static_cast<Impl*>(src);
+
+  if (src->format->BitsPerPixel == 8 &&
+      dst->format->BitsPerPixel == 8) {
+    for (int row = 0; row < src_rect->h; ++row) {
+      if (src_impl->color_key_ == -1) {
+        memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
+               Index8PixelsAt(src, src_rect->x, src_rect->y + row),
+               src_rect->w);
+      } else {
+        Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
+        Uint8* src_pixels = Index8PixelsAt(src, src_rect->x, src_rect->y + row);
+        for (int col = 0; col < src_rect->w; ++col) {
+          if (src_pixels[col] != src_impl->color_key_)
+            dst_pixels[col] = src_pixels[col];
+        }
+      }
+    }
+  } else if (src->format->BitsPerPixel == 1 &&
+             dst->format->BitsPerPixel == 8) {
+    for (int row = 0; row < src_rect->h; ++row) {
+      Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
+      Uint8* src_pixels_row_start =
+          static_cast<Uint8*>(src->pixels) + src->pitch * (dst_rect->y + row);
+      for (int col = 0; col < src_rect->w; ++col) {
+        Uint8 src_pixel = Index1PixelAt(src_pixels_row_start, dst_rect->x + col);
+        if (src_pixel != src_impl->color_key_)
+          dst_pixels[col] = src_pixel;
+      }
+    }
   }
 }
 
@@ -249,7 +313,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
 
     // Copy pixels
     for (int row = 0; row < rects[i].h; ++row) {
-      Uint8* src_pixels = IndexedPixelsAt(surface, rects[i].x, rects[i].y + row);
+      Uint8* src_pixels = Index8PixelsAt(surface, rects[i].x, rects[i].y + row);
       Uint8* dst_pixels = static_cast<Uint8*>(image_pixels) + row * image_desc.stride;
 
       //fprintf(stderr, "about to write row [%u] of pixels\n", row); fflush(stderr);
@@ -308,7 +372,7 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 
   SDL_RWclose(ops);
 
-  IndexedImpl* impl = NULL;
+  Index8Impl* impl = NULL;
   do {
     if (header.bits_per_pixel != 8) {
       fprintf(stderr, "SDL_LoadBMP: can only handle 8 bit depth!\n");
@@ -321,7 +385,7 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 
     //fprintf(stderr, "  (num_colors=%u, palette_size=%u)\n", header.num_colors, palette_size);
 
-    impl = new IndexedImpl(header.width, header.height, SDL_SWSURFACE);
+    impl = new Index8Impl(header.width, header.height, SDL_SWSURFACE);
 
     // Copy palette over
     for (int i = 0; i < header.num_colors; ++i) {
@@ -355,18 +419,19 @@ void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*) {
 }
 
 void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
-  if (surface->format->BitsPerPixel != 8) {
-    fprintf(stderr, "SDL_SetColorKey: only supported for 8 bit depth!\n");
+  if (surface->format->BitsPerPixel != 8 &&
+      surface->format->BitsPerPixel != 1) {
+    fprintf(stderr, "SDL_SetColorKey: unsupported pixel format!\n");
     return;
   }
 
-  IndexedImpl* impl = static_cast<IndexedImpl*>(surface);
+  Impl* impl = static_cast<Impl*>(surface);
 
   if (flags == 0) {
-    impl->transparent_color_ = -1;
+    impl->color_key_ = -1;
   } else {
     if (key < surface->format->palette->ncolors) {
-      impl->transparent_color_ = key;
+      impl->color_key_ = key;
     } else {
       fprintf(stderr, "SDL_SetColorKey: invalid color index!\n");
     }
