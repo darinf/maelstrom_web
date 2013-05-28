@@ -150,7 +150,7 @@ Uint8* Index8PixelsAt(SDL_Surface* surface, int x, int y) {
 }
 
 Uint8 Index1PixelAt(const Uint8* row_start, int x) {
-  return (row_start[x / 8] >> (7 - x % 8)) & 1;
+  return (row_start[x / 8] >> (7 - (x % 8))) & 1;
 }
 
 //----
@@ -257,21 +257,18 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
              dst->format->BitsPerPixel == 8) {
     // Map src palette to dst palette.
     Uint8 mapped_colors[2];
-    mapped_colors[0] = (Uint8) SDL_MapRGB(dst->format,
-                                          src->format->palette->colors[0].r,
-                                          src->format->palette->colors[0].g,
-                                          src->format->palette->colors[0].b);
-    mapped_colors[1] = (Uint8) SDL_MapRGB(dst->format,
-                                          src->format->palette->colors[1].r,
-                                          src->format->palette->colors[1].g,
-                                          src->format->palette->colors[1].b);
+    for (int j = 0; j < 2; ++j) {
+      const SDL_Color& color = src->format->palette->colors[j];
+      mapped_colors[j] =
+          (Uint8) SDL_MapRGB(dst->format, color.r, color.g, color.b);
+    }
 
     for (int row = 0; row < src_rect->h; ++row) {
       Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
       Uint8* src_pixels_row_start =
-          static_cast<Uint8*>(src->pixels) + src->pitch * (dst_rect->y + row);
+          static_cast<Uint8*>(src->pixels) + src->pitch * (src_rect->y + row);
       for (int col = 0; col < src_rect->w; ++col) {
-        Uint8 src_pixel = Index1PixelAt(src_pixels_row_start, dst_rect->x + col);
+        Uint8 src_pixel = Index1PixelAt(src_pixels_row_start, src_rect->x + col);
         if (src_pixel != src_impl->color_key_)
           dst_pixels[col] = mapped_colors[src_pixel];
       }
