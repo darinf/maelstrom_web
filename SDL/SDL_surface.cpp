@@ -89,7 +89,7 @@ Index1Impl::Index1Impl(int w, int h, Uint32 flags)
   if (w % 8)
     pitch++;
 
-  pixels = malloc(pitch * h);
+  pixels = calloc(1, pitch * h);
 
   format = &format_;
   format->BitsPerPixel = 1;
@@ -124,7 +124,7 @@ struct Index8Impl : Impl {
 Index8Impl::Index8Impl(int w, int h, Uint32 flags)
     : Impl(w, h, flags) {
   pitch = w;
-  pixels = malloc(pitch * h);
+  pixels = calloc(1, pitch * h);
 
   format = &format_;
   format->BitsPerPixel = 8;
