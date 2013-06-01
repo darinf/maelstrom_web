@@ -294,6 +294,9 @@ int SyncNetwork(void)
 	unsigned char buf[BUFSIZ];
 	int index, nleft;
 
+  if (!UseServer)
+    return 0;
+
 	/* Set the next inbound packet buffer */
 	TOGGLE(CurrIn);
 

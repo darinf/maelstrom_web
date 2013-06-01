@@ -4,6 +4,8 @@
 #include "ppb.h"
 
 void SDL_Delay(Uint32 msec) {
+  if (msec > 50)
+    msec = 50;
   usleep(msec * 1000);
 }
 

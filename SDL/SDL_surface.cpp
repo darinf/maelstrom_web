@@ -351,7 +351,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     PP_Point top_left;
     top_left.x = rects[i].x;
     top_left.y = rects[i].y;
-    //fprintf(stderr, "PaintImageData(x=%u,y=%u,w=%u,h=%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+    fprintf(stderr, "PaintImageData(x=%u,y=%u,w=%u,h=%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
     ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
 
     ppb.image_data->Unmap(image_data);
