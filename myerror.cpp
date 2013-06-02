@@ -9,6 +9,16 @@
 #include <string.h>
 #include <errno.h>
 
+#include <ppapi_main/ppapi_main.h>
+#include "ppb.h"
+
+
+static void WriteToConsole(const char* mesg, PP_LogLevel log_level) {
+  ppb.console->Log(
+      PPAPI_GetInstanceId(),
+      log_level, 
+      ppb.var->VarFromUtf8(mesg, strlen(mesg)));
+}
 
 void error(const char *fmt, ...)
 {
@@ -17,7 +27,7 @@ void error(const char *fmt, ...)
 
 	va_start(ap, fmt);
 	vsprintf(mesg, fmt, ap);
-	fputs(mesg, stderr);
+	WriteToConsole(mesg, PP_LOGLEVEL_ERROR);
 	va_end(ap);
 }
 
@@ -28,7 +38,7 @@ void mesg(const char *fmt, ...)
 
 	va_start(ap, fmt);
 	vsprintf(mesg, fmt, ap);
-	fputs(mesg, stdout);
+	WriteToConsole(mesg, PP_LOGLEVEL_LOG);
 	va_end(ap);
 }
 

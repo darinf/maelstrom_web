@@ -5,6 +5,8 @@
 PPB ppb;
 
 bool PPB_Init() {
+  ppb.console = reinterpret_cast<const PPB_Console*>(
+      PPAPI_GetInterface(PPB_CONSOLE_INTERFACE));
   ppb.core = reinterpret_cast<const PPB_Core*>(
       PPAPI_GetInterface(PPB_CORE_INTERFACE));
   ppb.file_io = reinterpret_cast<const PPB_FileIO*>(
@@ -19,5 +21,7 @@ bool PPB_Init() {
       PPAPI_GetInterface(PPB_IMAGEDATA_INTERFACE));
   ppb.instance = reinterpret_cast<const PPB_Instance*>(
       PPAPI_GetInterface(PPB_INSTANCE_INTERFACE));
+  ppb.var = reinterpret_cast<const PPB_Var*>(
+      PPAPI_GetInterface(PPB_VAR_INTERFACE));
   return true;
 }

@@ -22,7 +22,7 @@ static Uint32 PPAPIKeyCodeToSDLKeySym(Uint32 key_code) {
       return SDLK_p;
   }
 
-  fprintf(stderr, "unknown key code (%u)!\n", key_code);
+  //fprintf(stderr, "unknown key code (%u)!\n", key_code);
 }
 
 int SDL_PollEvent(SDL_Event* event) { 
@@ -30,7 +30,7 @@ int SDL_PollEvent(SDL_Event* event) {
   if (!ppapi_event)
     return 0;
 
-  fprintf(stderr, "got input event [type=%u]!\n", ppapi_event->event_type);
+  //fprintf(stderr, "got input event [type=%u]!\n", ppapi_event->event_type);
 
   int result = 1;
   switch (ppapi_event->event_type) {
@@ -44,7 +44,7 @@ int SDL_PollEvent(SDL_Event* event) {
     }
     case PP_INPUTEVENT_TYPE_KEYDOWN: {
       PPAPIKeyEvent* key_event = reinterpret_cast<PPAPIKeyEvent*>(ppapi_event);
-      fprintf(stderr, "  key_code=%u (mod=%u)\n", key_event->key_code, ppapi_event->modifiers);
+      //fprintf(stderr, "  key_code=%u (mod=%u)\n", key_event->key_code, ppapi_event->modifiers);
       event->type = SDL_KEYDOWN;
       event->key.state = SDL_PRESSED;
       event->key.keysym.sym = PPAPIKeyCodeToSDLKeySym(key_event->key_code);
@@ -54,7 +54,7 @@ int SDL_PollEvent(SDL_Event* event) {
     }
     case PP_INPUTEVENT_TYPE_KEYUP: {
       PPAPIKeyEvent* key_event = reinterpret_cast<PPAPIKeyEvent*>(ppapi_event);
-      fprintf(stderr, "  key_code=%u (mod=%u)\n", key_event->key_code, ppapi_event->modifiers);
+      //fprintf(stderr, "  key_code=%u (mod=%u)\n", key_event->key_code, ppapi_event->modifiers);
       event->type = SDL_KEYUP;
       event->key.state = SDL_RELEASED;
       event->key.keysym.sym = PPAPIKeyCodeToSDLKeySym(key_event->key_code);
@@ -73,7 +73,7 @@ int SDL_PollEvent(SDL_Event* event) {
 
 int SDL_WaitEvent(SDL_Event* event) {
   while (!SDL_PollEvent(event)) {
-    fprintf(stderr, "polling for input event...\n");
+    //fprintf(stderr, "polling for input event...\n");
     usleep(30000);
   }
   return 1;

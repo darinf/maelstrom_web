@@ -18,6 +18,8 @@
 # toolchain we use by default will be the first valid one listed
 VALID_TOOLCHAINS:=newlib glibc pnacl linux win
 
+CONFIG=Release
+
 
 #
 # Get pepper directory for toolchain and includes.

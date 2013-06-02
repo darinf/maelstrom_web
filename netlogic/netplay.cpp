@@ -294,9 +294,6 @@ int SyncNetwork(void)
 	unsigned char buf[BUFSIZ];
 	int index, nleft;
 
-  if (!UseServer)
-    return 0;
-
 	/* Set the next inbound packet buffer */
 	TOGGLE(CurrIn);
 
@@ -357,7 +354,7 @@ error("Timed out waiting for frame %ld\r\n", NextFrame);
 			continue;
 		}
 		if ( sent.channel <= 0 ) {
-			error("Packet from unknown source\n");
+			error("Packet from unknown source [channel=%u]\n", sent.channel);
 			continue;
 		}
 		index = sent.channel - 1;
