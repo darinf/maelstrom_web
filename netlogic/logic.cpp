@@ -108,6 +108,7 @@ int SpecialKey(SDL_keysym key)
 
 void SetControl(unsigned char which, int toggle)
 {
+  fprintf(stderr, "SetControl(%u, %u)\n", which, toggle);
 	QueueKey(toggle ? KEY_PRESS : KEY_RELEASE, which);
 }
 

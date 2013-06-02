@@ -53,6 +53,7 @@ enum {
 };
 
 enum {
+  SDL_RELEASED = 0,
   SDL_PRESSED = 1,
 };
 
