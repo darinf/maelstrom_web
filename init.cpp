@@ -761,12 +761,10 @@ int DoInitializations(Uint32 video_flags)
 
 	/* Load the Sound Server and initialize sound */
 	sound = new Sound(library.Path("Maelstrom Sounds"), gSoundLevel);
-  /* XXX
 	if ( sound->Error() ) {
 		error("Fatal: %s\n", sound->Error());
 		return(-1);
 	}
-  */
 
 	/* Load the Maelstrom icon */
 	icon = SDL_LoadBMP(library.Path("icon.bmp"));

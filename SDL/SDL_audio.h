@@ -19,7 +19,7 @@ enum {
   AUDIO_U8,
 };
 
-int SDL_OpenAudio(SDL_AudioSpec*, int*);
+int SDL_OpenAudio(SDL_AudioSpec* requested, SDL_AudioSpec* obtained);
 void SDL_CloseAudio();
 void SDL_PauseAudio(int);
 
