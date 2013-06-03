@@ -1,0 +1,154 @@
+<style>
+body {
+  padding: 0px;
+  margin: 0px;
+}
+div#progress {
+  display: none;
+  border: 1px solid gray;
+  width: 400px;
+  height: 10px;
+}
+div#progress-meter {
+  background-color: lightblue;
+  height: 100%;
+  width: 0px;
+}
+div#container {
+  padding: 0px;
+  width: 640px;
+  height: 480px;
+}
+</style>
+<script>
+// Library
+
+var kRequestedFSQuota = 5 * 1024 * 1024;
+
+function ErrorHandler(e) {
+  console.log("Error: " + e);
+}
+
+function WriteBlob(blob, path, dir, callback) {
+  webkitRequestFileSystem(window.TEMPORARY, kRequestedFSQuota,
+    function(fs) {  // success
+      fs.root.getDirectory(dir, {create: true},
+        function(dir) {
+          dir.getFile(path, {create: true},
+          function(entry) {
+            entry.createWriter(function(writer) {
+              writer.onwriteend = function() {
+                console.log("Wrote: " + path + " (" + blob.size + " bytes)");
+                callback();
+              }
+              writer.onerror = ErrorHandler;
+              writer.write(blob);
+            },
+            ErrorHandler);
+          },
+          ErrorHandler);
+        },
+        ErrorHandler);
+    },
+    ErrorHandler);
+}
+
+function FetchBlob(path, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = "blob";
+  xhr.onload = function() {
+    callback(xhr.response);
+  }
+  xhr.open("GET", path.replace("#", "%23"), true);
+  xhr.setRequestHeader("Cache-Control", "no-cache");
+  xhr.send(null);
+}
+
+// Application
+
+//var kConfig = "Debug";
+var kConfig = "Release";
+
+var kResourceFiles = [
+  "newlib/" + kConfig + "/maelstrom.nmf",
+  "newlib/" + kConfig + "/maelstrom_x86_64.nexe",
+  "Maelstrom-Scores",
+  "Maelstrom_Fonts",
+  "Maelstrom_Sounds",
+  "Maelstrom_Sprites",
+  "icon.bmp",
+  "Images/Maelstrom_Icon#100.cicn",
+  "Images/Maelstrom_Icon#101.cicn",
+  "Images/Maelstrom_Icon#102.cicn",
+  "Images/Maelstrom_Icon#103.cicn",
+  "Images/Maelstrom_Icon#104.cicn",
+  "Images/Maelstrom_Icon#110.cicn",
+  "Images/Maelstrom_Icon#128.cicn",
+  "Images/Maelstrom_Icon#129.cicn",
+  "Images/Maelstrom_Icon#130.cicn",
+  "Images/Maelstrom_Icon#131.cicn",
+  "Images/Maelstrom_Icon#132.cicn",
+  "Images/Maelstrom_Icon#133.cicn",
+  "Images/Maelstrom_Icon#134.cicn",
+  "Images/Maelstrom_Icon#135.cicn",
+  "Images/Maelstrom_Icon#136.cicn",
+  "Images/Maelstrom_Icon#137.cicn",
+  "Images/Maelstrom_Titles#100.bmp",
+  "Images/Maelstrom_Titles#101.bmp",
+  "Images/Maelstrom_Titles#102.bmp",
+  "Images/Maelstrom_Titles#128.bmp",
+  "Images/Maelstrom_Titles#129.bmp",
+  "Images/Maelstrom_Titles#130.bmp",
+  "Images/Maelstrom_Titles#133.bmp",
+  "Images/Maelstrom_Titles#134.bmp",
+  "Images/Maelstrom_Titles#135.bmp",
+  "Images/Maelstrom_Titles#999.bmp",
+];
+
+var resourcesFetched = 0;
+
+function Fetch(path) {
+  FetchBlob(path, function(blob) {
+    var parts = path.split("/");
+    var dir = "Maelstrom";
+    if (parts[0] == "Images")
+      dir = dir + "/Images";
+    var filename = parts[parts.length - 1];
+    WriteBlob(blob, filename, dir, function() {
+      ++resourcesFetched;
+      var percent = (100 * (resourcesFetched / kResourceFiles.length)).toFixed(0);
+      document.querySelector("#progress-meter").style.width = percent + "%";
+
+      if (resourcesFetched == kResourceFiles.length)
+        Init();
+    });
+  });
+}
+
+function Init() {
+  document.querySelector("#progress").style.display = "none";
+
+  var container = document.querySelector("#container");
+
+  container.innerHTML = '<embed width="640" height="480" src="filesystem:http://localhost:5103/temporary/Maelstrom/maelstrom.nmf" type="application/x-nacl">'
+
+  container.addEventListener("message", function(e) {
+    console.log(e.data);
+  }, true);
+  container.addEventListener("load", function(e) {
+    console.log("loaded");
+  }, true);
+}
+
+onload = function() {
+  document.querySelector("#progress").style.display = "block";
+
+  kResourceFiles.forEach(Fetch);
+}
+
+</script>
+
+<body>
+<div id="progress"><div id="progress-meter"></div></div>
+<div id="container"></div>
+</body>
