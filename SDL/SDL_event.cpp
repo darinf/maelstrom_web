@@ -74,7 +74,7 @@ int SDL_PollEvent(SDL_Event* event) {
 int SDL_WaitEvent(SDL_Event* event) {
   while (!SDL_PollEvent(event)) {
     //fprintf(stderr, "polling for input event...\n");
-    usleep(30000);
+    usleep(5000);
   }
   return 1;
 }

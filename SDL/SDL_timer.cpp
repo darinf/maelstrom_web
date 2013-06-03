@@ -1,5 +1,6 @@
 #include "SDL_timer.h"
 
+#include <stdio.h>
 #include <unistd.h>
 #include "ppb.h"
 
