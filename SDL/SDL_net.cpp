@@ -95,13 +95,13 @@ void SDLNet_ResolveHost(IPaddress* address, const char* host, int port) {
 }
 
 UDPsocket SDLNet_UDP_Open(int port) {
-  fprintf(stderr, "SDLNet_UDP_Open [port=%u]\n", port);
+  //fprintf(stderr, "SDLNet_UDP_Open [port=%u]\n", port);
   return new UDPsocket_Impl();
 }
 
 void SDLNet_UDP_Bind(UDPsocket socket, int channel, IPaddress* address) {
-  fprintf(stderr, "SDLNet_UDP_Bind (socket=%p, channel=%u, host=%u, port=%u)\n",
-      socket, channel, address->host, address->port);
+  //fprintf(stderr, "SDLNet_UDP_Bind (socket=%p, channel=%u, host=%u, port=%u)\n",
+  //    socket, channel, address->host, address->port);
 
   if (channel > 1) {
     fprintf(stderr, "SDLNet_UDP_Bind only supports 2 channels!\n");

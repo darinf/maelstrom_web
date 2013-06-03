@@ -16,7 +16,7 @@ struct SDL_AudioSpec {
 };
 
 enum {
-  AUDIO_U8,
+  AUDIO_U8 = 1,
 };
 
 int SDL_OpenAudio(SDL_AudioSpec* requested, SDL_AudioSpec* obtained);

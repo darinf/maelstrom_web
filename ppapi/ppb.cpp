@@ -5,6 +5,10 @@
 PPB ppb;
 
 bool PPB_Init() {
+  ppb.audio = reinterpret_cast<const PPB_Audio*>(
+      PPAPI_GetInterface(PPB_AUDIO_INTERFACE));
+  ppb.audio_config = reinterpret_cast<const PPB_AudioConfig*>(
+      PPAPI_GetInterface(PPB_AUDIO_CONFIG_INTERFACE));
   ppb.console = reinterpret_cast<const PPB_Console*>(
       PPAPI_GetInterface(PPB_CONSOLE_INTERFACE));
   ppb.core = reinterpret_cast<const PPB_Core*>(

@@ -1,6 +1,8 @@
 #ifndef ppb_h_
 #define ppb_h_
 
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -12,6 +14,8 @@
 #include "ppapi/c/ppb_var.h"
 
 struct PPB {
+  const PPB_Audio* audio;
+  const PPB_AudioConfig* audio_config;
   const PPB_Console* console;
   const PPB_Core* core;
   const PPB_FileIO* file_io;
