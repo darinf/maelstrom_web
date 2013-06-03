@@ -68,12 +68,13 @@ void KeyName(SDLKey keycode, char *namebuf)
 	*namebuf = '\0';
 }
 
-static FILE *OpenData(const char *mode, const char **fname)
+static SDL_RWops *OpenData(const char *mode, const char **fname)
 {
 	static char datafile[BUFSIZ];
-	const char *home;
-	FILE *data;
+	//const char *home;
+	SDL_RWops *data;
 
+#if 0
 	if ( (home=getenv("HOME")) == NULL ) {
 		if ( strcmp(CUR_DIR, DIR_SEP) != 0 ) {
 			home = CUR_DIR;
@@ -81,11 +82,12 @@ static FILE *OpenData(const char *mode, const char **fname)
 			home="";
 		}
 	}
+#endif
 	if ( fname ) {
 		*fname = datafile;
 	}
-	sprintf(datafile,  "%s"DIR_SEP"%s", home, MAELSTROM_DATA);
-	if ( (data=fopen(datafile, mode)) == NULL )
+	sprintf(datafile,  "Maelstrom/%s", MAELSTROM_DATA);
+	if ( (data=SDL_RWFromFile(datafile, mode)) == NULL )
 		return(NULL);
 	return(data);
 }
@@ -94,7 +96,7 @@ void LoadControls(void)
 {
 	char  buffer[BUFSIZ];
   const char *datafile;
-	FILE *data;
+	SDL_RWops *data;
 
 	/* Open our control data file */
 	data = OpenData("r", &datafile);
@@ -103,27 +105,27 @@ void LoadControls(void)
 	}
 
 	/* Read the controls */
-	if ( (fread(buffer, 1, 5, data) != 5) || strncmp(buffer, "MAEL3", 5) ) {
+	if ( (SDL_RWread(data, buffer, 1, 5) != 5) || strncmp(buffer, "MAEL3", 5) ) {
 		error(
 		"Warning: Data file '%s' is corrupt! (will fix)\n", datafile);
-		fclose(data);
+		SDL_RWclose(data);
 		return;
 	}
-	fread(&gSoundLevel, sizeof(gSoundLevel), 1, data);
-	fread(&controls, sizeof(controls), 1, data);
-	fread(&gGammaCorrect, sizeof(gGammaCorrect), 1, data);
-	fclose(data);
+	SDL_RWread(data, &gSoundLevel, sizeof(gSoundLevel), 1);
+	SDL_RWread(data, &controls, sizeof(controls), 1);
+	SDL_RWread(data, &gGammaCorrect, sizeof(gGammaCorrect), 1);
+	SDL_RWclose(data);
 }
 
 void SaveControls(void)
 {
 	const char  *datafile, *newmode;
-	FILE *data;
+	SDL_RWops *data;
 
 	/* Don't clobber existing joystick data */
 	if ( (data=OpenData("r", NULL)) != NULL ) {
 		newmode = "r+";
-		fclose(data);
+		SDL_RWclose(data);
 	} else
 		newmode = "w";
 
@@ -132,11 +134,11 @@ void SaveControls(void)
 		return;
 	}
 
-	fwrite("MAEL3", 1, 5, data);
-	fwrite(&gSoundLevel, sizeof(gSoundLevel), 1, data);
-	fwrite(&controls, sizeof(controls), 1, data);
-	fwrite(&gGammaCorrect, sizeof(gGammaCorrect), 1, data);
-	fclose(data);
+	SDL_RWwrite(data, "MAEL3", 1, 5);
+	SDL_RWwrite(data, &gSoundLevel, sizeof(gSoundLevel), 1);
+	SDL_RWwrite(data, &controls, sizeof(controls), 1);
+	SDL_RWwrite(data, &gGammaCorrect, sizeof(gGammaCorrect), 1);
+	SDL_RWclose(data);
 }
 
 #define FIRE_CTL	0
