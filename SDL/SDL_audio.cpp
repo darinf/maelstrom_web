@@ -2,8 +2,9 @@
 
 #include <stdio.h>
 
-#include <ppapi_main/ppapi_main.h>
 #include "ppb.h"
+
+extern PP_Instance g_instance;
 
 namespace {
 
@@ -67,7 +68,7 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
   }
 
   Uint32 sample_frame_count =
-      ppb.audio_config->RecommendSampleFrameCount(PPAPI_GetInstanceId(),
+      ppb.audio_config->RecommendSampleFrameCount(g_instance,
                                                   PP_AUDIOSAMPLERATE_44100,
                                                   PP_AUDIOMINSAMPLEFRAMECOUNT);
   //fprintf(stderr, "  recommended sample frame count = %u\n", sample_frame_count);
@@ -76,11 +77,11 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
   g_buffer = new Uint8[g_buffer_size];
 
   PP_Resource audio_config =
-      ppb.audio_config->CreateStereo16Bit(PPAPI_GetInstanceId(),
+      ppb.audio_config->CreateStereo16Bit(g_instance,
                                           PP_AUDIOSAMPLERATE_44100,
                                           sample_frame_count);
   
-  g_audio = ppb.audio->Create(PPAPI_GetInstanceId(),
+  g_audio = ppb.audio->Create(g_instance,
                               audio_config,
                               AudioCallback,
                               spec);

@@ -18,7 +18,8 @@
 # toolchain we use by default will be the first valid one listed
 VALID_TOOLCHAINS:=newlib glibc pnacl linux win
 
-CONFIG=Release
+CONFIG=Debug
+#CONFIG=Release
 
 
 #
@@ -27,7 +28,7 @@ CONFIG=Release
 # If NACL_SDK_ROOT is not set, then assume it can be found relative to
 # to this Makefile.
 #
-NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../nacl_sdk/nacl_sdk/pepper_28)
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../packages/nacl_sdk/pepper_canary)
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 
@@ -50,7 +51,6 @@ SOURCES= \
 	init.cpp \
 	load.cpp \
 	main.cpp \
-	myerror.cpp \
 	netscore.cpp \
 	rect.cpp \
 	scores.cpp \
@@ -81,8 +81,10 @@ SOURCES= \
   SDL/SDL_thread.cpp \
   SDL/SDL_timer.cpp \
   SDL/SDL_wm.cpp \
-  ppapi/ppapi_main.cpp \
+	myerror.cpp \
   ppapi/ppb.cpp \
+  ppapi/pp_resource_queue.cpp \
+  ppapi/ppapi_main.cpp \
   $(NULL)
 
 EXTRA_INC_PATHS=. netlogic screenlib maclib SDL ppapi
@@ -102,7 +104,7 @@ EXTRA_INC_PATHS=. netlogic screenlib maclib SDL ppapi
 # dependencies.
 #
 DEPS=
-LIBS=$(DEPS) ppapi_main nacl_io ppapi_cpp ppapi pthread
+LIBS=$(DEPS) ppapi pthread
 
 
 #

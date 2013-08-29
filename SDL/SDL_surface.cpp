@@ -6,8 +6,10 @@
 #include <unistd.h>
 #include "SDL_rwops.h"
 
-#include <ppapi_main/ppapi_main.h>
+#include "myerror.h"
 #include "ppb.h"
+
+extern PP_Instance g_instance;
 
 namespace {
 
@@ -162,21 +164,21 @@ PP_Resource graphics_2d = 0;
 
 SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags) {
   if (video_surface) {
-    fprintf(stderr, "SDL_SetVideoMode: video surface already initialized!\n");
+    error("SDL_SetVideoMode: video surface already initialized!");
     return NULL;
   }
 
   if (depth != 8) {
-    fprintf(stderr, "SDL_SetVideoMode: only 8 bit color depth is supported!\n");
+    error("SDL_SetVideoMode: only 8 bit color depth is supported!");
     return NULL;
   }
 
   PP_Size size;
   size.width = width;
   size.height = height;
-  graphics_2d = ppb.graphics_2d->Create(PPAPI_GetInstanceId(), &size, PP_TRUE);
+  graphics_2d = ppb.graphics_2d->Create(g_instance, &size, PP_TRUE);
 
-  ppb.instance->BindGraphics(PPAPI_GetInstanceId(), graphics_2d);
+  ppb.instance->BindGraphics(g_instance, graphics_2d);
 
   video_surface = new Index8Impl(width, height, video_flags);
   return video_surface;
@@ -193,7 +195,7 @@ SDL_Surface* SDL_CreateRGBSurface(int video_flags, int width, int height, int de
     case 8:
       return new Index8Impl(width, height, video_flags);
   }
-  fprintf(stderr, "SDL_CreateRGBSurface [depth=%u]: unsupported color depth!\n", depth);
+  error("SDL_CreateRGBSurface [depth=%u]: unsupported color depth!", depth);
   return NULL;
 }
 
@@ -207,13 +209,13 @@ void SDL_FreeSurface(SDL_Surface* surface) {
 }
 
 void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
-  //fprintf(stderr, "SDL_BlitSurface [src=%p, dst=%p]\n", src, dst);
+  //mesg("SDL_BlitSurface [src=%p, dst=%p]", src, dst);
   SDL_LowerBlit(src, src_rect, dst, dst_rect);
 }
 
 void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
 /*
-  fprintf(stderr, "SDL_LowerBlit [src=%p, src_rect=(%u,%u,%u,%u), dst=%p, dst_rect=(%u,%u,%u,%u)]\n",
+  mesg("SDL_LowerBlit [src=%p, src_rect=(%u,%u,%u,%u), dst=%p, dst_rect=(%u,%u,%u,%u)]",
       src,
       src_rect->x,
       src_rect->y,
@@ -228,7 +230,7 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
 
   if (src_rect->w != dst_rect->w ||
       src_rect->h != dst_rect->h) {
-    fprintf(stderr, "SDL_LowerBlit: width and height of src and dst much match!\n");
+    error("SDL_LowerBlit: width and height of src and dst much match!");
     return;
   }
 
@@ -277,24 +279,23 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
 }
 
 int SDL_LockSurface(SDL_Surface* surface) {
-  //fprintf(stderr, "SDL_LockSurface [%p]\n", surface);
+  //error("SDL_LockSurface [%p]", surface);
   return 0;
 }
 
 void SDL_UnlockSurface(SDL_Surface* surface) {
-  //fprintf(stderr, "SDL_UnlockSurface [%p]\n", surface);
+  //error("SDL_UnlockSurface [%p]", surface);
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
 /*
-  fprintf(stderr, "SDL_UpdateRects [%p num=%u]", surface, num_rects);
+  mesg("SDL_UpdateRects [%p num=%u]", surface, num_rects);
   for (int i = 0; i < num_rects; ++i)
-    fprintf(stderr, " (%u,%u,%u,%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
-  fprintf(stderr, "\n");
+    mesg(" (%u,%u,%u,%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
 */
 
   if (surface != video_surface) {
-    fprintf(stderr, "SDL_UpdateRects: can only be called on the video surface!\n");
+    mesg("SDL_UpdateRects: can only be called on the video surface!");
     return;
   }
 
@@ -306,7 +307,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     size.height = rects[i].h;
 
     PP_Resource image_data = ppb.image_data->Create(
-        PPAPI_GetInstanceId(),
+        g_instance,
         image_format,
         &size,
         PP_FALSE);
@@ -317,14 +318,14 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     void* image_pixels = ppb.image_data->Map(image_data);
     Uint32* image_pixels_end = (Uint32*) (((Uint8*) image_pixels) + image_desc.size.height * image_desc.stride);
 
-    //fprintf(stderr, "about to copy pixels [size=(%u,%u), stride=%u, pixels=%p]\n", image_desc.size.width, image_desc.size.height, image_desc.stride, image_pixels); fflush(stderr);
+    //mesg("about to copy pixels [size=(%u,%u), stride=%u, pixels=%p]", image_desc.size.width, image_desc.size.height, image_desc.stride, image_pixels);
 
     // Copy pixels
     for (int row = 0; row < rects[i].h; ++row) {
       Uint8* src_pixels = Index8PixelsAt(surface, rects[i].x, rects[i].y + row);
       Uint8* dst_pixels = static_cast<Uint8*>(image_pixels) + row * image_desc.stride;
 
-      //fprintf(stderr, "about to write row [%u] of pixels\n", row); fflush(stderr);
+      //mesg("about to write row [%u] of pixels", row);
       
       for (int col = 0; col < rects[i].w; ++col) {
         Uint8 index = src_pixels[col];
@@ -336,12 +337,12 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
             packed_color = color.b | (color.g << 8) | (color.r << 16);
             break;
           default:
-            fprintf(stderr, "Oops: need code for image format!\n");
+            error("Oops: need code for image format!");
             return;
         }
 
         // XXX
-        //fprintf(stderr, "writing dst_pixels [row=%d, col=%d]\n", row, col); fflush(stderr);
+        //mesg("writing dst_pixels [row=%d, col=%d]", row, col);
         Uint32* dst_ptr = reinterpret_cast<Uint32*>(dst_pixels + (4 * col));
         *dst_ptr = packed_color;
       }
@@ -351,7 +352,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     PP_Point top_left;
     top_left.x = rects[i].x;
     top_left.y = rects[i].y;
-    //fprintf(stderr, "PaintImageData(x=%u,y=%u,w=%u,h=%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+    //mesg("PaintImageData(x=%u,y=%u,w=%u,h=%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
     ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
 
     ppb.image_data->Unmap(image_data);
@@ -362,7 +363,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
-  //fprintf(stderr, "SDL_LoadBMP [\"%s\"]\n", path);
+  //mesg("SDL_LoadBMP [\"%s\"]", path);
 
   SDL_RWops* ops = SDL_RWFromFile(path, "rb");
   if (!ops)
@@ -383,15 +384,15 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
   Index8Impl* impl = NULL;
   do {
     if (header.bits_per_pixel != 8) {
-      fprintf(stderr, "SDL_LoadBMP: can only handle 8 bit depth!\n");
+      error("SDL_LoadBMP: can only handle 8 bit depth!");
       break;
     }
     if (header.compression != 0) {
-      fprintf(stderr, "SDL_LoadBMP: can only handle uncompressed data!\n");
+      error("SDL_LoadBMP: can only handle uncompressed data!");
       break;
     }
 
-    //fprintf(stderr, "  (num_colors=%u, palette_size=%u)\n", header.num_colors, palette_size);
+    //mesg("  (num_colors=%u, palette_size=%u)", header.num_colors, palette_size);
 
     impl = new Index8Impl(header.width, header.height, SDL_SWSURFACE);
 
@@ -418,18 +419,18 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 }
 
 int SDL_SaveBMP(SDL_Surface* surface, const char* path) {
-  fprintf(stderr, "SDL_SaveBMP [%p, \"%s\"]\n", surface, path);
+  mesg("SDL_SaveBMP [%p, \"%s\"]", surface, path);
   return 0;
 }
 
 void SDL_SetGammaRamp(Uint16*, Uint16*, Uint16*) {
-  //fprintf(stderr, "SDL_SetGammaRamp\n");
+  //mesg("SDL_SetGammaRamp");
 }
 
 void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
   if (surface->format->BitsPerPixel != 8 &&
       surface->format->BitsPerPixel != 1) {
-    fprintf(stderr, "SDL_SetColorKey: unsupported pixel format!\n");
+    error("SDL_SetColorKey: unsupported pixel format!");
     return;
   }
 
@@ -441,7 +442,7 @@ void SDL_SetColorKey(SDL_Surface* surface, Uint32 flags, Uint32 key) {
     if (key < surface->format->palette->ncolors) {
       impl->color_key_ = key;
     } else {
-      fprintf(stderr, "SDL_SetColorKey: invalid color index!\n");
+      error("SDL_SetColorKey: invalid color index!");
     }
   }
 }
@@ -453,7 +454,7 @@ void SDL_SetColors(SDL_Surface* surface, SDL_Color* colors, int offset, int coun
 
 Uint32 SDL_MapRGB(SDL_PixelFormat* format, Uint8 r, Uint8 g, Uint8 b) {
   if (format->BitsPerPixel != 8) {
-    fprintf(stderr, "SDL_MapRGB: only know how to handle 8 bit depth!\n");
+    error("SDL_MapRGB: only know how to handle 8 bit depth!");
     return 0;
   }
 

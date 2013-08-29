@@ -64,14 +64,25 @@ function FetchBlob(path, callback) {
   xhr.send(null);
 }
 
+function GetParam(name, defaultValue) {
+  var params = location.search.substring(1).split("&");
+  for (var i = 0; i < params.length; ++i) {
+    var pair = params[i].split("=");
+    if (pair[0] == name)
+      return pair[1];
+  }
+  return defaultValue;
+}
+
 // Application
 
-//var kConfig = "Debug";
-var kConfig = "Release";
+// toolchain=pnacl|newlib
+var kToolchain = GetParam("toolchain", "pnacl");
+
+// config=Release|Debug
+var kConfig = GetParam("config", "Release");
 
 var kResourceFiles = [
-  "newlib/" + kConfig + "/maelstrom.nmf",
-  "newlib/" + kConfig + "/maelstrom_x86_64.nexe",
   "Maelstrom-Scores",
   "Maelstrom_Fonts",
   "Maelstrom_Sounds",
@@ -130,7 +141,13 @@ function Init() {
 
   var container = document.querySelector("#container");
 
-  container.innerHTML = '<embed width="640" height="480" src="filesystem:http://localhost:5103/temporary/Maelstrom/maelstrom.nmf" type="application/x-nacl">'
+  var type =
+      (kToolchain == "pnacl") ? "application/x-pnacl" : "application/x-nacl";
+
+  container.innerHTML =
+      '<embed width="640" height="480" src="' +
+      kToolchain + '/' + kConfig +
+      '/maelstrom.nmf" type="'+ type + '">';
 
   container.addEventListener("message", function(e) {
     console.log(e.data);

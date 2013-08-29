@@ -609,7 +609,7 @@ void DrawMainScreen(void)
 
 	DrawText(xOff+5+68, yOff+5+127, "Port to Linux by Sam Lantinga",
 				font, STYLE_BOLD, 0xFF, 0xFF, 0x00);
-	DrawText(rightDiv+10, yOff+259, "©1992-4 Ambrosia Software, Inc.",
+	DrawText(rightDiv+10, yOff+259, "(c) 1992-4 Ambrosia Software, Inc.",
 				font, STYLE_BOLD, 0xFF, 0xFF, 0xFF);
 
 /* -- Draw the version number */

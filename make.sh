@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec $(dirname $0)/../../nacl_sdk/nacl_sdk/pepper_28/tools/make $*
+exec $(dirname $0)/../../packages/nacl_sdk/pepper_30/tools/make $*

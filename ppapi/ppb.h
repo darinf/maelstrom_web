@@ -1,6 +1,7 @@
 #ifndef ppb_h_
 #define ppb_h_
 
+#include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_console.h"
@@ -10,6 +11,7 @@
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_var.h"
 
@@ -23,11 +25,14 @@ struct PPB {
   const PPB_FileSystem* file_system;
   const PPB_Graphics2D* graphics_2d;
   const PPB_ImageData* image_data;
+  const PPB_InputEvent* input_event;
   const PPB_Instance* instance;
+  const PPB_KeyboardInputEvent* keyboard_input_event;
+  const PPB_MouseInputEvent* mouse_input_event;
   const PPB_Var* var;
 };
 extern PPB ppb;
 
-bool PPB_Init();
+bool PPB_Init(PPB_GetInterface get_browser_interface);
 
 #endif  // ppb_h_

@@ -75,12 +75,12 @@ typedef struct FInfo FInfo;
 
 #define F_fOnDesk       0x0001 /* file is on desktop (HFS only) */
 #define F_maskColor     0x000E /* color coding (3 bits) */
-/*                      0x0010 /* reserved (System 7) */
+//                      0x0010 /* reserved (System 7) */
 #define F_fSwitchLaunch 0x0020 /* reserved (System 7) */
 #define F_fShared       0x0040 /* appl available to multiple users */
 #define F_fNoINITs      0x0080 /* file contains no INIT resources */
 #define F_fBeenInited   0x0100 /* Finder has loaded bundle res. */
-/*                      0x0200  /* reserved (System 7) */
+//                      0x0200 /* reserved (System 7) */
 #define F_fCustomIcom   0x0400 /* file contains custom icon */
 #define F_fStationary   0x0800 /* file is a stationary pad */
 #define F_fNameLocked   0x1000 /* file can't be renamed by Finder */
@@ -139,7 +139,7 @@ typedef struct ASEntry ASEntry;
 #define AS_COMMENT      4 /* standard Mac comment */
 #define AS_ICONBW       5 /* Mac black & white icon */
 #define AS_ICONCOLOR    6 /* Mac color icon */
-        /*              7       /* not used */
+        //              7       /* not used */
 #define AS_FILEDATES    8 /* file dates; create, modify, etc */
 #define AS_FINDERINFO   9 /* Mac Finder info & extended info */
 #define AS_MACINFO      10 /* Mac file info, attributes, etc */
@@ -330,7 +330,7 @@ struct AppleSingle /* format of disk file */
 {
     ASHeader header; /* AppleSingle header part */
     ASEntry  entry[1]; /* array of entry descriptors */
-/* Uint8   filedata[];          /* followed by rest of file */
+// Uint8   filedata[];          /* followed by rest of file */
 }; /* AppleSingle */
 
 typedef struct AppleSingle AppleSingle;

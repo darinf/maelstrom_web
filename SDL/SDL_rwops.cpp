@@ -4,13 +4,14 @@
 #include <string.h>
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
-#include <ppapi_main/ppapi_main.h>
 
 #include "SDL/SDL_endian.h"
 #include "ppb.h"
 
 #define NOIMPL() \
   fprintf(stderr, "Function not implemented: %s\n", __FUNCTION__)
+
+extern PP_Instance g_instance;
 
 namespace {
 
@@ -30,7 +31,7 @@ struct Impl : SDL_RWops {
 };
 
 bool Impl::Open(PP_Resource file_ref, const char* mode) {
-  file_io_ = ppb.file_io->Create(PPAPI_GetInstanceId());
+  file_io_ = ppb.file_io->Create(g_instance);
   if (!file_io_)
     return false;
 
@@ -105,7 +106,7 @@ void SDL_SetError(const char*) {}
 
 SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
   PP_Resource file_system =
-      ppb.file_system->Create(PPAPI_GetInstanceId(),
+      ppb.file_system->Create(g_instance,
                               PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   if (!file_system)
     return NULL;
