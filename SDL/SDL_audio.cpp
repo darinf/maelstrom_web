@@ -14,6 +14,7 @@ Uint32 g_buffer_size;
 
 void AudioCallback(void* sample_buffer,
                    uint32_t buffer_size_in_bytes,
+                   PP_TimeDelta latency,
                    void* user_data) {
   if (buffer_size_in_bytes != g_buffer_size * 4 * 2 * 2) {
     fprintf(stderr, "AudioCallback: unexpected buffer_size_in_bytes = %u\n", buffer_size_in_bytes);

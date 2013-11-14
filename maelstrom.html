@@ -60,7 +60,7 @@ function FetchBlob(path, callback) {
     callback(xhr.response);
   }
   xhr.open("GET", path.replace("#", "%23"), true);
-  xhr.setRequestHeader("Cache-Control", "no-cache");
+  //xhr.setRequestHeader("Cache-Control", "no-cache");
   xhr.send(null);
 }
 
