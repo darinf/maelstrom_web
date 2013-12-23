@@ -76,12 +76,6 @@ function GetParam(name, defaultValue) {
 
 // Application
 
-// toolchain=pnacl|newlib
-var kToolchain = GetParam("toolchain", "pnacl");
-
-// config=Release|Debug
-var kConfig = GetParam("config", "Release");
-
 var kResourceFiles = [
   "Maelstrom-Scores",
   "Maelstrom_Fonts",
@@ -141,13 +135,8 @@ function Init() {
 
   var container = document.querySelector("#container");
 
-  var type =
-      (kToolchain == "pnacl") ? "application/x-pnacl" : "application/x-nacl";
-
   container.innerHTML =
-      '<embed width="640" height="480" src="' +
-      kToolchain + '/' + kConfig +
-      '/maelstrom.nmf" type="'+ type + '">';
+      '<embed width="640" height="480" src="maelstrom.nmf" type="application/x-pnacl">';
 
   container.addEventListener("message", function(e) {
     console.log(e.data);
