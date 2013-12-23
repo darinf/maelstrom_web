@@ -173,6 +173,16 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
     return NULL;
   }
 
+  if (width <= 0) {
+    error("width: must be a positive value!");
+    return NULL;
+  }
+
+  if (height <= 0) {
+    error("height: must be a positive value!");
+    return NULL;
+  }
+
   PP_Size size;
   size.width = width;
   size.height = height;
