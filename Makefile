@@ -28,7 +28,7 @@ CONFIG=Release
 # If NACL_SDK_ROOT is not set, then assume it can be found relative to
 # to this Makefile.
 #
-NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../packages/nacl_sdk/pepper_canary)
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../packages/nacl_sdk/pepper_31)
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 
