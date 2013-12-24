@@ -2,7 +2,7 @@
   "program": {
     "portable": {
       "pnacl-translate": {
-        "url": "maelstrom.pexe"
+        "url": "maelstrom.pexe?1"
       }
     }
   }
