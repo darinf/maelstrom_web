@@ -172,6 +172,9 @@ int Maelstrom_main(int argc, const char *argv[])
 	int speedtest = 0;
 	Uint32 video_flags = SDL_SWSURFACE;
 
+  fprintf(stderr, "sleeping in Maelstrom_main"); fflush(stderr);
+  usleep(10000000);
+
 	/* Normal variables */
 	SDL_Event event;
 	LibPath::SetExePath(argv[0]);
