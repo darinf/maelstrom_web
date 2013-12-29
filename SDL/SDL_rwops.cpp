@@ -19,8 +19,10 @@ struct Impl : SDL_RWops {
   Impl() : file_io_(0), offset_(0) {
   }
   ~Impl() {
-    if (file_io_)
+    if (file_io_) {
+      ppb.file_io->Close(file_io_);
       ppb.core->ReleaseResource(file_io_);
+    }
   }
 
   bool Open(PP_Resource file_ref, const char* mode);
