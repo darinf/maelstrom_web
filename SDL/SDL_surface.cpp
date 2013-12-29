@@ -163,8 +163,6 @@ PP_Resource graphics_2d = 0;
 }  // namespace
 
 SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags) {
-  fprintf(stderr, "SDL_SetVideoMode(%d,%d,%d)", width, height, depth);
-
   if (video_surface) {
     error("SDL_SetVideoMode: video surface already initialized!");
     return NULL;
@@ -300,8 +298,6 @@ void SDL_UnlockSurface(SDL_Surface* surface) {
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
-  return;
-
 /*
   mesg("SDL_UpdateRects [%p num=%u]", surface, num_rects);
   for (int i = 0; i < num_rects; ++i)
