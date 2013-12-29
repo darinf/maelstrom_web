@@ -220,6 +220,14 @@ void SDL_FreeSurface(SDL_Surface* surface) {
 
 void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
   //mesg("SDL_BlitSurface [src=%p, dst=%p]", src, dst);
+  SDL_Rect default_src_rect;
+  if (!src_rect) {
+    default_src_rect.x = 0;
+    default_src_rect.y = 0;
+    default_src_rect.w = src->w;
+    default_src_rect.h = src->h;
+    src_rect = &default_src_rect;
+  }
   SDL_LowerBlit(src, src_rect, dst, dst_rect);
 }
 
@@ -244,24 +252,45 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
     return;
   }
 
-
   Impl* src_impl = static_cast<Impl*>(src);
 
   if (src->format->BitsPerPixel == 8 &&
       dst->format->BitsPerPixel == 8) {
     // Assume palettes match!
 
-    for (int row = 0; row < src_rect->h; ++row) {
-      if (src_impl->color_key_ == -1) {
-        memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
-               Index8PixelsAt(src, src_rect->x, src_rect->y + row),
-               src_rect->w);
-      } else {
+    SDL_Palette* src_palette = src->format->palette;
+    SDL_Palette* dst_palette = dst->format->palette;
+
+    bool palettes_match =
+        src_palette->ncolors == dst_palette->ncolors &&
+            memcmp(src_palette->colors,
+                   dst_palette->colors,
+                   src_palette->ncolors * sizeof(SDL_Color)) == 0;
+
+    if (palettes_match) {
+      for (int row = 0; row < src_rect->h; ++row) {
+        if (src_impl->color_key_ == -1) {
+          memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
+                 Index8PixelsAt(src, src_rect->x, src_rect->y + row),
+                 src_rect->w);
+        } else {
+          Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
+          Uint8* src_pixels = Index8PixelsAt(src, src_rect->x, src_rect->y + row);
+          for (int col = 0; col < src_rect->w; ++col) {
+            if (src_pixels[col] != src_impl->color_key_)
+              dst_pixels[col] = src_pixels[col];
+          }
+        }
+      }
+    } else {
+      for (int row = 0; row < src_rect->h; ++row) {
         Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
         Uint8* src_pixels = Index8PixelsAt(src, src_rect->x, src_rect->y + row);
         for (int col = 0; col < src_rect->w; ++col) {
-          if (src_pixels[col] != src_impl->color_key_)
-            dst_pixels[col] = src_pixels[col];
+          if (src_pixels[col] != src_impl->color_key_) {
+            SDL_Color color = src_palette->colors[src_pixels[col]];
+            dst_pixels[col] = SDL_MapRGB(dst->format, color.r, color.g, color.b);
+          }
         }
       }
     }

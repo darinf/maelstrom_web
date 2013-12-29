@@ -6,10 +6,11 @@
 #include <ppapi/c/pp_errors.h>
 
 #include "SDL/SDL_endian.h"
+#include "myerror.h"
 #include "ppb.h"
 
 #define NOIMPL() \
-  fprintf(stderr, "Function not implemented: %s\n", __FUNCTION__)
+  error("Function not implemented: %s\n", __FUNCTION__)
 
 extern PP_Instance g_instance;
 
@@ -31,11 +32,16 @@ struct Impl : SDL_RWops {
 };
 
 bool Impl::Open(PP_Resource file_ref, const char* mode) {
-  PP_FileOpenFlags open_flags;
+  int32_t open_flags;
   if (!strcmp(mode, "rb") || !strcmp(mode, "r")) {
     open_flags = PP_FILEOPENFLAG_READ;
+  } else if (!strcmp(mode, "r+")) {
+    open_flags = PP_FILEOPENFLAG_READ |
+                 PP_FILEOPENFLAG_WRITE;
+  } else if (!strcmp(mode, "wb") || !strcmp(mode, "w")) {
+    open_flags = PP_FILEOPENFLAG_WRITE;
   } else {
-    fprintf(stderr, "mode=%s\n", mode);
+    error("Open(mode=%s): not implemented", mode);
     return false;
   }
 

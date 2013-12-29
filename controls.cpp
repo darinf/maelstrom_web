@@ -260,7 +260,6 @@ void ConfigureControls(void)
 	Mac_RadioList *radiobuttons;
 	Mac_Dialog *boxes;
 
-
 	/* Set up all the components of the dialog box */
 	black = screen->MapRGB(0x00, 0x00, 0x00);
 	if ( (chicago = fontserv->NewFont("Chicago", 12)) == NULL ) {
