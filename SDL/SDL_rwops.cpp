@@ -31,10 +31,6 @@ struct Impl : SDL_RWops {
 };
 
 bool Impl::Open(PP_Resource file_ref, const char* mode) {
-  file_io_ = ppb.file_io->Create(g_instance);
-  if (!file_io_)
-    return false;
-
   PP_FileOpenFlags open_flags;
   if (!strcmp(mode, "rb") || !strcmp(mode, "r")) {
     open_flags = PP_FILEOPENFLAG_READ;
@@ -42,6 +38,10 @@ bool Impl::Open(PP_Resource file_ref, const char* mode) {
     fprintf(stderr, "mode=%s\n", mode);
     return false;
   }
+
+  file_io_ = ppb.file_io->Create(g_instance);
+  if (!file_io_)
+    return false;
 
   int32_t rv = ppb.file_io->Open(
       file_io_, file_ref, open_flags, PP_BlockUntilComplete());
