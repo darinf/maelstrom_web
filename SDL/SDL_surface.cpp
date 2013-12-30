@@ -402,7 +402,11 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     ppb.core->ReleaseResource(image_data);
   }
 
+  //PP_TimeTicks start = ppb.core->GetTimeTicks();
   ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
+  //PP_TimeTicks end = ppb.core->GetTimeTicks();
+  //PP_TimeDelta delta = end - start;
+  //mesg("Flushed [%f + %f]", start, delta);
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {

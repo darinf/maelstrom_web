@@ -46,7 +46,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
       break;
     }
     default:
-      mesg("unknown input event");
+      //mesg("unknown input event");
       translated = false;
       break;
   }
