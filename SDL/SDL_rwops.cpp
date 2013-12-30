@@ -26,6 +26,7 @@ struct Impl : SDL_RWops {
 
   bool Open(PP_Resource file_ref, const char* mode);
   Sint32 Read(void* buf, Uint32 size, Uint32 count);
+  Sint32 Write(const void* buf, Uint32 size, Uint32 count);
 
   PP_Resource file_io_;
   int offset_;
@@ -39,7 +40,9 @@ bool Impl::Open(PP_Resource file_ref, const char* mode) {
     open_flags = PP_FILEOPENFLAG_READ |
                  PP_FILEOPENFLAG_WRITE;
   } else if (!strcmp(mode, "wb") || !strcmp(mode, "w")) {
-    open_flags = PP_FILEOPENFLAG_WRITE;
+    open_flags = PP_FILEOPENFLAG_WRITE |
+                 PP_FILEOPENFLAG_CREATE |
+                 PP_FILEOPENFLAG_TRUNCATE;
   } else {
     error("Open(mode=%s): not implemented", mode);
     return false;
@@ -99,6 +102,27 @@ Sint32 Impl::Read(void* buf, Uint32 size, Uint32 count) {
 
   if (rv % size)
     fprintf(stderr, "Oops: read more than what is being reported?\n");
+
+  return rv / size;
+}
+
+Sint32 Impl::Write(const void* buf, Uint32 size, Uint32 count) {
+  //fprintf(stderr, "Read [%p](%p,%u,%u)\n", this, buf, size, count);
+
+  int32_t rv = ppb.file_io->Write(file_io_,
+                                  offset_,
+                                  static_cast<const char*>(buf),
+                                  size * count,
+                                  PP_BlockUntilComplete());
+  if (rv < 0) {
+    fprintf(stderr, "PPB_FileIO::Write failed: %d\n", rv);
+    return -1;
+  }
+
+  offset_ += rv;
+
+  if (rv % size)
+    fprintf(stderr, "Oops: wrote more than what is being reported?\n");
 
   return rv / size;
 }
@@ -178,7 +202,11 @@ Sint32 SDL_RWread(SDL_RWops* ops, void* buf, Uint32 size, Uint32 count) {
   return impl->Read(buf, size, count);
 }
 
-Sint32 SDL_RWwrite(SDL_RWops*, const void* buf, Uint32 size, Uint32 count) { NOIMPL(); return 0; }
+Sint32 SDL_RWwrite(SDL_RWops* ops, const void* buf, Uint32 size, Uint32 count) {
+  Impl* impl = static_cast<Impl*>(ops);
+  return impl->Write(buf, size, count);
+}
+
 Uint32 SDL_WriteBE32(SDL_RWops*, Uint32) { NOIMPL(); return 0; }
 Uint32 SDL_WriteLE32(SDL_RWops*, Uint32) { NOIMPL(); return 0; }
 

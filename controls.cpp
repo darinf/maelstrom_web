@@ -86,7 +86,7 @@ static SDL_RWops *OpenData(const char *mode, const char **fname)
 	if ( fname ) {
 		*fname = datafile;
 	}
-	sprintf(datafile,  "Maelstrom/%s", MAELSTROM_DATA);
+	sprintf(datafile,  "/Maelstrom/%s", MAELSTROM_DATA);
 	if ( (data=SDL_RWFromFile(datafile, mode)) == NULL )
 		return(NULL);
 	return(data);
