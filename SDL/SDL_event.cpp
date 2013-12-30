@@ -18,7 +18,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
   switch (input_event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
       PP_Point position = ppb.mouse_input_event->GetPosition(input_event);
-      mesg("mousedown [x=%u, y=%u]", position.x, position.y);
+      //mesg("mousedown [x=%u, y=%u]", position.x, position.y);
       result->type = SDL_MOUSEBUTTONDOWN;
       result->button.button = 1;
       result->button.x = position.x;
@@ -27,7 +27,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
     }
     case PP_INPUTEVENT_TYPE_KEYDOWN: {
       uint32_t key_code = ppb.keyboard_input_event->GetKeyCode(input_event);
-      mesg("keydown [key_code=%u]", key_code);
+      //mesg("keydown [key_code=%u]", key_code);
       result->type = SDL_KEYDOWN;
       result->key.state = SDL_PRESSED;
       result->key.keysym.sym = key_code;
@@ -37,7 +37,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
     }
     case PP_INPUTEVENT_TYPE_KEYUP: {
       uint32_t key_code = ppb.keyboard_input_event->GetKeyCode(input_event);
-      mesg("keyup [key_code=%u]", key_code);
+      //mesg("keyup [key_code=%u]", key_code);
       result->type = SDL_KEYUP;
       result->key.state = SDL_RELEASED;
       result->key.keysym.sym = key_code;

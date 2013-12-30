@@ -345,6 +345,10 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     size.width = rects[i].w;
     size.height = rects[i].h;
 
+    // Skip empty rects.
+    if (!size.width || !size.height)
+      continue;
+
     PP_Resource image_data = ppb.image_data->Create(
         g_instance,
         image_format,
