@@ -14,14 +14,15 @@ not all that useful to anyone else.
 
 **BUILDING**
 
-To build, just run make.sh from the root of the source directory.  You'll need
-to have the NaCl SDK w/ Pepper 28 available.  See make.sh and Makefile for
-where the path to Pepper 28 needs to be specified.
+To build, just run make from the root of the source directory.  You'll need
+to have the NaCl SDK w/ Pepper 31 available.  See the Makefile for
+where the path to Pepper 31 needs to be specified.
 
 **RUNNING**
 
-From the Pepper 28 directory, run the httpd server from the NaCl SDK like so:
-<code>./examples/httpd.cmd -C '<path-to>/maelstrom_nacl' --no_dir_check</code>
+From the Pepper 31 directory, run the httpd server from the NaCl SDK like so:
+<code>./examples/httpd -C '<path-to>/maelstrom_nacl' --no_dir_check</code>
 
 Then, point your browser at http://localhost:5103/maelstrom.html.
 
+You can also try loading http://darinf.github.io/maelstrom_nacl/maelstrom.html.
