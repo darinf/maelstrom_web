@@ -29,6 +29,16 @@ function ErrorHandler(e) {
   console.log("Error: " + e);
 }
 
+function DirExists(dir, success_callback, error_callback) {
+  webkitRequestFileSystem(window.TEMPORARY, kRequestedFSQuota,
+    function(fs) {  // success
+      fs.root.getDirectory(dir, {create: false},
+        success_callback,
+        error_callback);
+    },
+    ErrorHandler);
+}
+
 function WriteBlob(blob, path, dir, callback) {
   webkitRequestFileSystem(window.TEMPORARY, kRequestedFSQuota,
     function(fs) {  // success
@@ -68,10 +78,13 @@ function GetParam(name, defaultValue) {
   var params = location.search.substring(1).split("&");
   for (var i = 0; i < params.length; ++i) {
     var pair = params[i].split("=");
-    if (pair[0] == name)
-      return pair[1];
+    if (pair[0] == name) {
+      if (pair.length > 1)
+        return pair[1];
+      return defaultValue;
+    }
   }
-  return defaultValue;
+  return undefined;
 }
 
 // Application
@@ -142,14 +155,24 @@ function Init() {
     console.log(e.data);
   }, true);
   container.addEventListener("load", function(e) {
-    console.log("loaded");
+    //console.log("loaded");
   }, true);
 }
 
 onload = function() {
   document.querySelector("#progress").style.display = "block";
 
-  kResourceFiles.forEach(Fetch);
+  if (GetParam("reset", true)) {
+    kResourceFiles.forEach(Fetch);
+  } else {
+    DirExists("Maelstrom",
+      function() {
+        Init();
+      },
+      function() {
+        kResourceFiles.forEach(Fetch);
+      });
+  }
 }
 
 </script>
