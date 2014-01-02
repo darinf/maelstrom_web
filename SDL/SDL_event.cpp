@@ -10,6 +10,30 @@
 
 extern PPResourceQueue g_input_queue;
 
+static int ToUnicode(uint32_t key_code, PP_Resource input_event) {
+  // NOTE: We should really handle PP_INPUTEVENT_TYPE_CHAR instead,
+  // but this hacky approach is good enough for a subset of ASCII.
+
+  if (key_code >= SDLK_0 && key_code <= SDLK_9)
+    return (int) key_code;
+
+  if (key_code >= SDLK_a && key_code <= SDLK_z) {
+    uint32_t modifiers = ppb.input_event->GetModifiers(input_event);
+    if (modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY)
+      return (int) key_code;
+
+    return (int) key_code + 32;
+  }
+
+  if (key_code == SDLK_BACKSPACE || key_code == SDLK_DELETE)
+    return '\b';
+
+  if (key_code == SDLK_RETURN)
+    return '\r';
+
+  return 0;
+}
+
 static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
   bool translated = true;
 
@@ -32,7 +56,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
       result->key.state = SDL_PRESSED;
       result->key.keysym.sym = key_code;
       result->key.keysym.mod = 0;
-      result->key.keysym.unicode = 0;
+      result->key.keysym.unicode = ToUnicode(key_code, input_event);
       break;
     }
     case PP_INPUTEVENT_TYPE_KEYUP: {
@@ -42,7 +66,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
       result->key.state = SDL_RELEASED;
       result->key.keysym.sym = key_code;
       result->key.keysym.mod = 0;
-      result->key.keysym.unicode = 0;
+      result->key.keysym.unicode = ToUnicode(key_code, input_event);
       break;
     }
     default:

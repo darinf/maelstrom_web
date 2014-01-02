@@ -207,7 +207,15 @@ Sint32 SDL_RWwrite(SDL_RWops* ops, const void* buf, Uint32 size, Uint32 count) {
   return impl->Write(buf, size, count);
 }
 
-Uint32 SDL_WriteBE32(SDL_RWops*, Uint32) { NOIMPL(); return 0; }
+Uint32 SDL_WriteBE32(SDL_RWops* ops, Uint32 n) {
+  Uint32 be = SDL_SwapBE32(n);
+
+  if (SDL_RWwrite(ops, &be, sizeof(be), 1) != 1)
+    return 0;
+
+  return 1;
+}
+
 Uint32 SDL_WriteLE32(SDL_RWops*, Uint32) { NOIMPL(); return 0; }
 
 Uint32 SDL_RWseek(SDL_RWops* ops, Sint32 offset, int whence) {

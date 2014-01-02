@@ -53,6 +53,30 @@ void ReadBitmapHeader(SDL_RWops* ops, BMPFileHeader* header) {
   header->num_important_colors  = SDL_ReadLE32(ops);
 }
 
+void DumpBitmapHeader(BMPFileHeader* header) {
+#define DUMP(field) mesg(#field ": %u", (uint32_t) header->field)
+  DUMP(type);
+  DUMP(size);
+  DUMP(reserved);
+  DUMP(bitmap_offset);
+  DUMP(header_size);
+  DUMP(width);
+  DUMP(height);
+  DUMP(planes);
+  DUMP(bits_per_pixel);
+  DUMP(compression);
+  DUMP(bitmap_size);
+  DUMP(horizontal_resolution);
+  DUMP(vertical_resolution);
+  DUMP(num_colors);
+  DUMP(num_important_colors);
+#undef DUMP 
+}
+
+inline Uint32 PitchFromWidth(Sint32 w) {
+  return (w + 3) & ~3;
+}
+
 //----
 
 struct Impl : SDL_Surface {
@@ -125,7 +149,7 @@ struct Index8Impl : Impl {
 
 Index8Impl::Index8Impl(int w, int h, Uint32 flags)
     : Impl(w, h, flags) {
-  pitch = w;
+  pitch = PitchFromWidth(w);
   pixels = calloc(1, pitch * h);
 
   format = &format_;
@@ -423,6 +447,8 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
   BMPFileHeader header;
   ReadBitmapHeader(ops, &header);
 
+  //DumpBitmapHeader(&header);
+
   int palette_size = header.bitmap_offset - kBMPHeaderSize;
   Uint8* palette_data = new Uint8[palette_size];
   SDL_RWread(ops, palette_data, 1, palette_size);
@@ -458,9 +484,11 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 
     // Copy pixels over
     for (int row = 0; row < header.height; ++row) {
+      Uint32 pitch = PitchFromWidth(header.width);
+
       // bitmap_data rows are flipped upside down.
-      Uint8* src_row = bitmap_data + (header.height - row - 1) * header.width;
-      Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * header.width;
+      Uint8* src_row = bitmap_data + (header.height - row - 1) * pitch;
+      Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * pitch;
       memcpy(dst_row, src_row, header.width);
     }
   } while (false);

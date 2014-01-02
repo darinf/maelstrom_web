@@ -12,8 +12,15 @@ class PPResourceQueue {
 
   void Put(PP_Resource resource);
 
+  // These methods remove the resource from the queue and pass ownership to
+  // the caller.
   PP_Resource GetOrFail();
   PP_Resource Get();
+
+  // These methods do not remove the resource from the queue, and ownership is
+  // not passed to the caller.
+  PP_Resource PeekOrFail();
+  PP_Resource Peek();
 
  private:
   PP_Resource PopHead();
