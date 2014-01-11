@@ -53,6 +53,30 @@ void ReadBitmapHeader(SDL_RWops* ops, BMPFileHeader* header) {
   header->num_important_colors  = SDL_ReadLE32(ops);
 }
 
+void DumpBitmapHeader(BMPFileHeader* header) {
+#define DUMP(field) mesg(#field ": %u", (uint32_t) header->field)
+  DUMP(type);
+  DUMP(size);
+  DUMP(reserved);
+  DUMP(bitmap_offset);
+  DUMP(header_size);
+  DUMP(width);
+  DUMP(height);
+  DUMP(planes);
+  DUMP(bits_per_pixel);
+  DUMP(compression);
+  DUMP(bitmap_size);
+  DUMP(horizontal_resolution);
+  DUMP(vertical_resolution);
+  DUMP(num_colors);
+  DUMP(num_important_colors);
+#undef DUMP 
+}
+
+inline Uint32 PitchFromWidth(Sint32 w) {
+  return (w + 3) & ~3;
+}
+
 //----
 
 struct Impl : SDL_Surface {
@@ -125,7 +149,7 @@ struct Index8Impl : Impl {
 
 Index8Impl::Index8Impl(int w, int h, Uint32 flags)
     : Impl(w, h, flags) {
-  pitch = w;
+  pitch = PitchFromWidth(w);
   pixels = calloc(1, pitch * h);
 
   format = &format_;
@@ -220,6 +244,14 @@ void SDL_FreeSurface(SDL_Surface* surface) {
 
 void SDL_BlitSurface(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_Rect* dst_rect) {
   //mesg("SDL_BlitSurface [src=%p, dst=%p]", src, dst);
+  SDL_Rect default_src_rect;
+  if (!src_rect) {
+    default_src_rect.x = 0;
+    default_src_rect.y = 0;
+    default_src_rect.w = src->w;
+    default_src_rect.h = src->h;
+    src_rect = &default_src_rect;
+  }
   SDL_LowerBlit(src, src_rect, dst, dst_rect);
 }
 
@@ -244,24 +276,45 @@ void SDL_LowerBlit(SDL_Surface* src, SDL_Rect* src_rect, SDL_Surface* dst, SDL_R
     return;
   }
 
-
   Impl* src_impl = static_cast<Impl*>(src);
 
   if (src->format->BitsPerPixel == 8 &&
       dst->format->BitsPerPixel == 8) {
     // Assume palettes match!
 
-    for (int row = 0; row < src_rect->h; ++row) {
-      if (src_impl->color_key_ == -1) {
-        memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
-               Index8PixelsAt(src, src_rect->x, src_rect->y + row),
-               src_rect->w);
-      } else {
+    SDL_Palette* src_palette = src->format->palette;
+    SDL_Palette* dst_palette = dst->format->palette;
+
+    bool palettes_match =
+        src_palette->ncolors == dst_palette->ncolors &&
+            memcmp(src_palette->colors,
+                   dst_palette->colors,
+                   src_palette->ncolors * sizeof(SDL_Color)) == 0;
+
+    if (palettes_match) {
+      for (int row = 0; row < src_rect->h; ++row) {
+        if (src_impl->color_key_ == -1) {
+          memcpy(Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row),
+                 Index8PixelsAt(src, src_rect->x, src_rect->y + row),
+                 src_rect->w);
+        } else {
+          Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
+          Uint8* src_pixels = Index8PixelsAt(src, src_rect->x, src_rect->y + row);
+          for (int col = 0; col < src_rect->w; ++col) {
+            if (src_pixels[col] != src_impl->color_key_)
+              dst_pixels[col] = src_pixels[col];
+          }
+        }
+      }
+    } else {
+      for (int row = 0; row < src_rect->h; ++row) {
         Uint8* dst_pixels = Index8PixelsAt(dst, dst_rect->x, dst_rect->y + row);
         Uint8* src_pixels = Index8PixelsAt(src, src_rect->x, src_rect->y + row);
         for (int col = 0; col < src_rect->w; ++col) {
-          if (src_pixels[col] != src_impl->color_key_)
-            dst_pixels[col] = src_pixels[col];
+          if (src_pixels[col] != src_impl->color_key_) {
+            SDL_Color color = src_palette->colors[src_pixels[col]];
+            dst_pixels[col] = SDL_MapRGB(dst->format, color.r, color.g, color.b);
+          }
         }
       }
     }
@@ -316,6 +369,10 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     size.width = rects[i].w;
     size.height = rects[i].h;
 
+    // Skip empty rects.
+    if (!size.width || !size.height)
+      continue;
+
     PP_Resource image_data = ppb.image_data->Create(
         g_instance,
         image_format,
@@ -369,7 +426,16 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     ppb.core->ReleaseResource(image_data);
   }
 
+  //static PP_TimeTicks last_flush_end = 0.0;
+  //PP_TimeTicks start = ppb.core->GetTimeTicks();
+
   ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
+
+  //PP_TimeTicks end = ppb.core->GetTimeTicks();
+  //PP_TimeDelta delta_this = 1000.0 * (end - start);
+  //PP_TimeDelta delta_last = 1000.0 * (end - last_flush_end);
+  //last_flush_end = end;
+  //mesg("Flushed [%0.0f %0.0f %0.2f]", delta_this, delta_last, delta_last - delta_this);
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {
@@ -380,6 +446,8 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
     return NULL;
   BMPFileHeader header;
   ReadBitmapHeader(ops, &header);
+
+  //DumpBitmapHeader(&header);
 
   int palette_size = header.bitmap_offset - kBMPHeaderSize;
   Uint8* palette_data = new Uint8[palette_size];
@@ -416,9 +484,11 @@ SDL_Surface* SDL_LoadBMP(const char* path) {
 
     // Copy pixels over
     for (int row = 0; row < header.height; ++row) {
+      Uint32 pitch = PitchFromWidth(header.width);
+
       // bitmap_data rows are flipped upside down.
-      Uint8* src_row = bitmap_data + (header.height - row - 1) * header.width;
-      Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * header.width;
+      Uint8* src_row = bitmap_data + (header.height - row - 1) * pitch;
+      Uint8* dst_row = static_cast<Uint8*>(impl->pixels) + row * pitch;
       memcpy(dst_row, src_row, header.width);
     }
   } while (false);

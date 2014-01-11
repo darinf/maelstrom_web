@@ -38,7 +38,7 @@ function WriteBlob(blob, path, dir, callback) {
           function(entry) {
             entry.createWriter(function(writer) {
               writer.onwriteend = function() {
-                console.log("Wrote: " + path + " (" + blob.size + " bytes)");
+                //console.log("Wrote: " + path + " (" + blob.size + " bytes)");
                 callback();
               }
               writer.onerror = ErrorHandler;
@@ -153,7 +153,7 @@ function Init() {
     console.log(e.data);
   }, true);
   container.addEventListener("load", function(e) {
-    console.log("loaded");
+    //console.log("loaded");
   }, true);
 }
 

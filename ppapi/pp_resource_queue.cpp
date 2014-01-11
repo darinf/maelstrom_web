@@ -60,6 +60,29 @@ PP_Resource PPResourceQueue::Get() {
   return result;
 }
 
+PP_Resource PPResourceQueue::PeekOrFail() {
+  PP_Resource result = 0;
+  pthread_mutex_lock(&lock_);
+
+  if (head_ != NULL)
+    result = head_->resource;
+
+  pthread_mutex_unlock(&lock_);
+  return result;
+}
+
+PP_Resource PPResourceQueue::Peek() {
+  PP_Resource result = 0;
+  pthread_mutex_lock(&lock_);
+
+  while (head_ == NULL)
+    pthread_cond_wait(&cvar_, &lock_);
+  result = head_->resource;
+
+  pthread_mutex_unlock(&lock_);
+  return result;
+}
+
 PP_Resource PPResourceQueue::PopHead() {
   Node* node = head_;
   head_ = head_->next;

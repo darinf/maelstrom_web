@@ -29,7 +29,7 @@ PP_Bool Instance_DidCreate(PP_Instance instance,
                            const char* argn[],
                            const char* argv[]) {
   g_instance = instance;
-  mesg("Instance_DidCreate");
+  //mesg("Instance_DidCreate");
 
   ppb.input_event->RequestInputEvents(g_instance, 
                                       PP_INPUTEVENT_CLASS_MOUSE |
@@ -41,19 +41,19 @@ PP_Bool Instance_DidCreate(PP_Instance instance,
 }
 
 void Instance_DidDestroy(PP_Instance instance) {
-  mesg("Instance_DidDestroy");
+  //mesg("Instance_DidDestroy");
 }
 
 void Instance_DidChangeView(PP_Instance instance, PP_Resource view) {
-  mesg("Instance_DidChangeView");
+  //mesg("Instance_DidChangeView");
 }
 
 void Instance_DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
-  mesg("Instance_DidChangeFocus");
+  //mesg("Instance_DidChangeFocus");
 }
 
 PP_Bool Instance_HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
-  mesg("Instance_HandleDocumentLoad");
+  //mesg("Instance_HandleDocumentLoad");
   return PP_FALSE;
 }
 
@@ -65,7 +65,7 @@ PP_Bool Instance_HandleInputEvent(PP_Instance instance, PP_Resource input_event)
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
                                        PPB_GetInterface get_browser_interface) {
-  mesg("PPP_InitializeModule");
+  //mesg("PPP_InitializeModule");
 
   if (!PPB_Init(get_browser_interface))
     return PP_ERROR_FAILED;
@@ -74,7 +74,7 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
 }
 
 PP_EXPORT void PPP_ShutdownModule() {
-  mesg("PPP_ShutdownModule");
+  //mesg("PPP_ShutdownModule");
 }
 
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {

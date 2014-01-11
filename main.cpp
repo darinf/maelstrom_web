@@ -40,7 +40,7 @@ static void DrawKey(MPoint *pt, const char *ch, const char *str, void (*callback
 // Main Menu actions:
 static void RunDoAbout(void)
 {
-	gNoDelay = 0;
+	gNoDelay = 1;
 	Delay(SOUND_DELAY);
 	sound->PlaySound(gNovaAppears, 5);
 	DoAbout();
@@ -55,7 +55,7 @@ static void RunPlayGame(void)
 {
 	gStartLives = 3;
 	gStartLevel = 1;
-	gNoDelay = 0;
+	gNoDelay = 1;
 	sound->PlaySound(gNewLife, 5);
 	Delay(SOUND_DELAY);
 	NewGame();

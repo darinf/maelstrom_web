@@ -86,7 +86,7 @@ static SDL_RWops *OpenData(const char *mode, const char **fname)
 	if ( fname ) {
 		*fname = datafile;
 	}
-	sprintf(datafile,  "Maelstrom/%s", MAELSTROM_DATA);
+	sprintf(datafile,  "/Maelstrom/%s", MAELSTROM_DATA);
 	if ( (data=SDL_RWFromFile(datafile, mode)) == NULL )
 		return(NULL);
 	return(data);
@@ -259,7 +259,6 @@ void ConfigureControls(void)
 	Mac_Button *cancel, *okay;
 	Mac_RadioList *radiobuttons;
 	Mac_Dialog *boxes;
-
 
 	/* Set up all the components of the dialog box */
 	black = screen->MapRGB(0x00, 0x00, 0x00);
