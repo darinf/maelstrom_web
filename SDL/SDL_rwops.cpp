@@ -17,9 +17,13 @@ extern PP_Instance g_instance;
 namespace {
 
 struct Impl : SDL_RWops {
-  Impl() : file_io_(0), offset_(0) {
+  explicit Impl(PP_Resource file_system)
+      : file_system_(file_system), file_io_(0), offset_(0) {
+    ppb.core->AddRefResource(file_system_);
   }
   ~Impl() {
+    if (file_system_)
+      ppb.core->ReleaseResource(file_system_);
     if (file_io_)
       ppb.core->ReleaseResource(file_io_);
   }
@@ -28,6 +32,7 @@ struct Impl : SDL_RWops {
   Sint32 Read(void* buf, Uint32 size, Uint32 count);
   Sint32 Write(const void* buf, Uint32 size, Uint32 count);
 
+  PP_Resource file_system_;
   PP_Resource file_io_;
   int offset_;
 };
@@ -147,7 +152,7 @@ SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
   if (rv == PP_OK) {
     PP_Resource file_ref = ppb.file_ref->Create(file_system, path);
     if (file_ref) {
-      impl = new Impl();
+      impl = new Impl(file_system);
       if (!impl->Open(file_ref, mode)) {
         delete impl;
         impl = NULL;
