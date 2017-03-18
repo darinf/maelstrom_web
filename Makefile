@@ -1,3 +1,5 @@
+# vim:ts=8 sw=8 noet
+
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,7 +18,7 @@
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc pnacl linux win
+#VALID_TOOLCHAINS:=newlib glibc pnacl linux win
 
 #CONFIG=Debug
 CONFIG=Release
@@ -28,8 +30,10 @@ CONFIG=Release
 # If NACL_SDK_ROOT is not set, then assume it can be found relative to
 # to this Makefile.
 #
-NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../packages/nacl_sdk/pepper_31)
-include $(NACL_SDK_ROOT)/tools/common.mk
+#NACL_SDK_ROOT?=$(abspath $(CURDIR)/../../packages/nacl_sdk/pepper_31)
+#include $(NACL_SDK_ROOT)/tools/common.mk
+
+include common.mk
 
 
 #
@@ -54,40 +58,38 @@ SOURCES= \
 	netscore.cpp \
 	rect.cpp \
 	scores.cpp \
-  netlogic/about.cpp \
-  netlogic/blit.cpp \
-  netlogic/game.cpp \
-  netlogic/logic.cpp \
-  netlogic/make.cpp \
-  netlogic/netplay.cpp \
-  netlogic/object.cpp \
-  netlogic/objects.cpp \
-  netlogic/player.cpp \
-  maclib/Mac_FontServ.cpp \
-  maclib/Mac_Resource.cpp \
-  maclib/Mac_Sound.cpp \
-  maclib/Mac_Wave.cpp \
-  screenlib/pixel.cpp \
-  screenlib/SDL_FrameBuf.cpp \
-  port.c \
-  SDL/SDL_audio.cpp \
-  SDL/SDL_endian.cpp \
-  SDL/SDL_event.cpp \
-  SDL/SDL_init.cpp \
-  SDL/SDL_mutex.cpp \
-  SDL/SDL_net.cpp \
-  SDL/SDL_rwops.cpp \
-  SDL/SDL_surface.cpp \
-  SDL/SDL_thread.cpp \
-  SDL/SDL_timer.cpp \
-  SDL/SDL_wm.cpp \
+	netlogic/about.cpp \
+	netlogic/blit.cpp \
+	netlogic/game.cpp \
+	netlogic/logic.cpp \
+	netlogic/make.cpp \
+	netlogic/netplay.cpp \
+	netlogic/object.cpp \
+	netlogic/objects.cpp \
+	netlogic/player.cpp \
+	maclib/Mac_FontServ.cpp \
+	maclib/Mac_Resource.cpp \
+	maclib/Mac_Sound.cpp \
+	maclib/Mac_Wave.cpp \
+	screenlib/pixel.cpp \
+	screenlib/SDL_FrameBuf.cpp \
+	port.c \
 	myerror.cpp \
-  ppapi/ppb.cpp \
-  ppapi/pp_resource_queue.cpp \
-  ppapi/ppapi_main.cpp \
-  $(NULL)
+	$(NULL)
 
-EXTRA_INC_PATHS=. netlogic screenlib maclib SDL ppapi
+#	SDL/SDL_audio.cpp \
+#	SDL/SDL_endian.cpp \
+#	SDL/SDL_event.cpp \
+#	SDL/SDL_init.cpp \
+#	SDL/SDL_mutex.cpp \
+#	SDL/SDL_net.cpp \
+#	SDL/SDL_rwops.cpp \
+#	SDL/SDL_surface.cpp \
+#	SDL/SDL_thread.cpp \
+#	SDL/SDL_timer.cpp \
+#	SDL/SDL_wm.cpp \
+
+INC_PATHS=. netlogic screenlib maclib SDL ppapi
 
 
 #
@@ -104,7 +106,8 @@ EXTRA_INC_PATHS=. netlogic screenlib maclib SDL ppapi
 # dependencies.
 #
 DEPS=
-LIBS=$(DEPS) ppapi pthread
+#LIBS=$(DEPS) ppapi pthread
+LIBS=
 
 
 #
