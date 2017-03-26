@@ -1,42 +1,48 @@
 #include "SDL_rwops.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <ppapi/c/pp_completion_callback.h>
-#include <ppapi/c/pp_errors.h>
+//XXX#include <ppapi/c/pp_completion_callback.h>
+//XXX#include <ppapi/c/pp_errors.h>
 
 #include "SDL/SDL_endian.h"
 #include "myerror.h"
-#include "ppb.h"
+//XXX #include "ppb.h"
 
 #define NOIMPL() \
   error("Function not implemented: %s\n", __FUNCTION__)
 
-extern PP_Instance g_instance;
+//XXX extern PP_Instance g_instance;
 
 namespace {
 
 struct Impl : SDL_RWops {
+#if 0
   explicit Impl(PP_Resource file_system)
       : file_system_(file_system), file_io_(0), offset_(0) {
     ppb.core->AddRefResource(file_system_);
   }
+#endif
   ~Impl() {
+#if 0
     if (file_system_)
       ppb.core->ReleaseResource(file_system_);
     if (file_io_)
       ppb.core->ReleaseResource(file_io_);
+#endif
   }
 
-  bool Open(PP_Resource file_ref, const char* mode);
+//XXX  bool Open(PP_Resource file_ref, const char* mode);
   Sint32 Read(void* buf, Uint32 size, Uint32 count);
   Sint32 Write(const void* buf, Uint32 size, Uint32 count);
 
-  PP_Resource file_system_;
-  PP_Resource file_io_;
+  //XXX PP_Resource file_system_;
+  //XXX PP_Resource file_io_;
   int offset_;
 };
 
+#if 0
 bool Impl::Open(PP_Resource file_ref, const char* mode) {
   int32_t open_flags;
   if (!strcmp(mode, "rb") || !strcmp(mode, "r")) {
@@ -67,6 +73,7 @@ bool Impl::Open(PP_Resource file_ref, const char* mode) {
 
   return true;
 }
+#endif
 
 Sint32 Impl::Read(void* buf, Uint32 size, Uint32 count) {
 #if 0
@@ -93,11 +100,14 @@ Sint32 Impl::Read(void* buf, Uint32 size, Uint32 count) {
 
   //fprintf(stderr, "Read [%p](%p,%u,%u)\n", this, buf, size, count);
 
+  int32_t rv = 0;  // XXX
+#if 0
   int32_t rv = ppb.file_io->Read(file_io_,
                                  offset_,
                                  static_cast<char*>(buf),
                                  size * count,
                                  PP_BlockUntilComplete());
+#endif
   if (rv < 0) {
     fprintf(stderr, "PPB_FileIO::Read failed: %d\n", rv);
     return -1;
@@ -114,11 +124,11 @@ Sint32 Impl::Read(void* buf, Uint32 size, Uint32 count) {
 Sint32 Impl::Write(const void* buf, Uint32 size, Uint32 count) {
   //fprintf(stderr, "Read [%p](%p,%u,%u)\n", this, buf, size, count);
 
-  int32_t rv = ppb.file_io->Write(file_io_,
-                                  offset_,
-                                  static_cast<const char*>(buf),
-                                  size * count,
-                                  PP_BlockUntilComplete());
+  int32_t rv = 0; //XXX ppb.file_io->Write(file_io_,
+                  //XXX                offset_,
+                  //XXX                static_cast<const char*>(buf),
+                  //XXX                size * count,
+                  //XXX                PP_BlockUntilComplete());
   if (rv < 0) {
     fprintf(stderr, "PPB_FileIO::Write failed: %d\n", rv);
     return -1;
@@ -140,6 +150,7 @@ const char* SDL_GetError() { return 0; }
 void SDL_SetError(const char*) {}
 
 SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
+#if 0
   PP_Resource file_system =
       ppb.file_system->Create(g_instance,
                               PP_FILESYSTEMTYPE_LOCALTEMPORARY);
@@ -163,6 +174,8 @@ SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
 
   ppb.core->ReleaseResource(file_system); 
   return impl;
+#endif
+  return NULL;
 }
 
 int SDL_RWclose(SDL_RWops* ops) {

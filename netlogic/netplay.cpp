@@ -107,9 +107,9 @@ int AddPlayer(const char *playerstr)
 	char *host=NULL, *port=NULL;
 
 	/* Extract host and port information */
-	if ( (port=strchr(playerstr, ':')) != NULL )
+	if ( (port=(char*)strchr(playerstr, ':')) != NULL )
 		*(port++) = '\0';
-	if ( (host=strchr(playerstr, '@')) != NULL )
+	if ( (host=(char*)strchr(playerstr, '@')) != NULL )
 		*(host++) = '\0';
 
 	/* Find out which player we are referring to */
@@ -161,13 +161,13 @@ int SetServer(const char *serverstr)
 	char *host=NULL, *port=NULL;
 
 	/* Extract host and port information */
-	if ( (host=strchr(serverstr, '@')) == NULL ) {
+	if ( (host=(char*)strchr(serverstr, '@')) == NULL ) {
 		error(
 		"Server host must be specified in the -server option.\r\n");
 		PrintUsage();
 	} else
 		*(host++) = '\0';
-	if ( (port=strchr(serverstr, ':')) != NULL )
+	if ( (port=(char*)strchr(serverstr, ':')) != NULL )
 		*(port++) = '\0';
 
 	/* We should know how many players we have now */

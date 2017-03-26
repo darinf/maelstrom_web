@@ -165,7 +165,7 @@ void PrintUsage(void)
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
-int Maelstrom_main(int argc, const char *argv[])
+extern "C" int main(int argc, const char *argv[])
 {
 	/* Command line flags */
 	int doprinthigh = 0;

@@ -73,21 +73,21 @@ SOURCES= \
 	maclib/Mac_Wave.cpp \
 	screenlib/pixel.cpp \
 	screenlib/SDL_FrameBuf.cpp \
-	port.c \
 	myerror.cpp \
+	SDL/SDL_audio.cpp \
+	SDL/SDL_endian.cpp \
+	SDL/SDL_event.cpp \
+	SDL/SDL_init.cpp \
+	SDL/SDL_mutex.cpp \
+	SDL/SDL_net.cpp \
+	SDL/SDL_rwops.cpp \
+	SDL/SDL_surface.cpp \
+	SDL/SDL_thread.cpp \
+	SDL/SDL_timer.cpp \
+	SDL/SDL_wm.cpp \
 	$(NULL)
 
-#	SDL/SDL_audio.cpp \
-#	SDL/SDL_endian.cpp \
-#	SDL/SDL_event.cpp \
-#	SDL/SDL_init.cpp \
-#	SDL/SDL_mutex.cpp \
-#	SDL/SDL_net.cpp \
-#	SDL/SDL_rwops.cpp \
-#	SDL/SDL_surface.cpp \
-#	SDL/SDL_thread.cpp \
-#	SDL/SDL_timer.cpp \
-#	SDL/SDL_wm.cpp \
+#	port.c \
 
 INC_PATHS=. netlogic screenlib maclib SDL ppapi
 
@@ -111,6 +111,11 @@ LIBS=
 
 
 #
+# Use the link macro for this target on the list of sources.
+#
+$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
+
+#
 # Use the library dependency macro for each dependency
 #
 $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
@@ -119,13 +124,3 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 # Use the compile macro for each source.
 #
 $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
-
-#
-# Use the link macro for this target on the list of sources.
-#
-$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
-
-#
-# Specify the NMF to be created with no additional arugments.
-#
-$(eval $(call NMF_RULE,$(TARGET),))

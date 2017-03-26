@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#if 0
 #include "ppb.h"
 
 extern PP_Instance g_instance;
@@ -48,11 +49,12 @@ void AudioCallback(void* sample_buffer,
 }
 
 }  // namespace
+#endif
 
 int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
-  //fprintf(stderr, "SDL_OpenAudio [channels=%u, format=%u, size=%u, samples=%u, freq=%u, callback=%p]\n",
-  //    spec->channels, spec->format, spec->size, spec->samples, spec->freq, spec->callback);
-
+  fprintf(stderr, "Unimplemented: SDL_OpenAudio [channels=%u, format=%u, size=%u, samples=%u, freq=%u, callback=%p]\n",
+      spec->channels, spec->format, spec->size, spec->samples, spec->freq, spec->callback);
+#if 0
   if (spec->freq != 11025) {
     fprintf(stderr, "SDL_OpenAudio: unsupported frequency!\n");
     return -1;
@@ -89,26 +91,31 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
 
   ppb.core->ReleaseResource(audio_config);
   return 0;
+#endif
+  return -1;
 }
 
 void SDL_CloseAudio() {
-  //fprintf(stderr, "SDL_CloseAudio\n");
-
+  fprintf(stderr, "Unimplemented: SDL_CloseAudio\n");
+#if 0
   ppb.core->ReleaseResource(g_audio);
   g_audio = 0;
 
   delete[] g_buffer;
   g_buffer = NULL;
   g_buffer_size = 0;
+#endif
 }
 
 void SDL_PauseAudio(int pause) {
-  //fprintf(stderr, "SDL_PauseAudio(%d)\n", value);
+  fprintf(stderr, "Unimplemented: SDL_PauseAudio(%d)\n", pause);
+#if 0
   if (pause) {
     ppb.audio->StopPlayback(g_audio);
   } else {
     ppb.audio->StartPlayback(g_audio);
   }
+#endif
 }
 
 void* SDL_LoadWAV(const char* wavefile, SDL_AudioSpec*, Uint8** samples, Uint32* num_samples) { return 0; }

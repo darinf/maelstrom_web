@@ -29,7 +29,7 @@ static inline char *strdup(const char *str)
 #include "SDL_FrameBuf.h"
 
 /* Pathing stuff for the different operating systems */
-#if defined(unix) || defined(__MACH__) || defined(__native_client__)
+#if defined(unix) || defined(__MACH__) || defined(__EMSCRIPTEN__)
 #define DIR_SEP	"/"
 #define CUR_DIR	"."
 #elif defined(WIN32)

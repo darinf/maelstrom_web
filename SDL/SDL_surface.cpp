@@ -1,15 +1,16 @@
 #include "SDL_surface.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include "SDL_rwops.h"
 
 #include "myerror.h"
-#include "ppb.h"
+//XXX #include "ppb.h"
 
-extern PP_Instance g_instance;
+//XXX extern PP_Instance g_instance;
 
 namespace {
 
@@ -182,7 +183,7 @@ Uint8 Index1PixelAt(const Uint8* row_start, int x) {
 //----
 
 Index8Impl* video_surface = NULL;
-PP_Resource graphics_2d = 0;
+//XXX PP_Resource graphics_2d = 0;
 
 }  // namespace
 
@@ -207,12 +208,14 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
     return NULL;
   }
 
+#if 0
   PP_Size size;
   size.width = width;
   size.height = height;
   graphics_2d = ppb.graphics_2d->Create(g_instance, &size, PP_TRUE);
 
   ppb.instance->BindGraphics(g_instance, graphics_2d);
+#endif
 
   video_surface = new Index8Impl(width, height, video_flags);
   return video_surface;
@@ -362,6 +365,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     return;
   }
 
+#if 0
   PP_ImageDataFormat image_format = ppb.image_data->GetNativeImageDataFormat();
 
   for (int i = 0; i < num_rects; ++i) {
@@ -436,6 +440,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
   //PP_TimeDelta delta_last = 1000.0 * (end - last_flush_end);
   //last_flush_end = end;
   //mesg("Flushed [%0.0f %0.0f %0.2f]", delta_this, delta_last, delta_last - delta_this);
+#endif
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {

@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <ppapi/c/ppb_input_event.h>
+//XXX #include <ppapi/c/ppb_input_event.h>
 #include "myerror.h"
-#include "ppb.h"
-#include "pp_resource_queue.h"
+//XXX #include "ppb.h"
+//XXX #include "pp_resource_queue.h"
 
+#if 0
 extern PPResourceQueue g_input_queue;
 
 static int ToUnicode(uint32_t key_code, PP_Resource input_event) {
@@ -76,10 +77,11 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
   }
   return translated;
 }
+#endif
 
 int SDL_PollEvent(SDL_Event* event) { 
-  //mesg("SDL_PollEvent");
-
+  error("Unimplemented: SDL_PollEvent");
+#if 0
   for (;;) {
     PP_Resource input_resource = g_input_queue.GetOrFail();
     if (!input_resource)
@@ -92,12 +94,13 @@ int SDL_PollEvent(SDL_Event* event) {
     if (translated)
       break;
   }
+#endif
   return 1;
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
-  //mesg("SDL_WaitEvent");
-
+  error("Unimplemented: SDL_WaitEvent");
+#if 0
   for (;;) {
     PP_Resource input_resource = g_input_queue.Get();
     if (!input_resource)
@@ -110,6 +113,7 @@ int SDL_WaitEvent(SDL_Event* event) {
     if (translated)
       break;
   }
+#endif
   return 1;
 }
 
