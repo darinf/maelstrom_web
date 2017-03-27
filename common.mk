@@ -5,7 +5,7 @@ STAMPDIR ?= $(OUTDIR)
 
 EM_CC = emcc
 EM_CXX = emcc
-EM_CFLAGS = -Wall -s WASM=1
+EM_CFLAGS = -Wall -s WASM=1 --js-library "web/support_lib.js"
 
 
 # Convert a source path to a object file path.

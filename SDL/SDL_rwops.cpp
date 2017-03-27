@@ -15,6 +15,11 @@
 
 //XXX extern PP_Instance g_instance;
 
+extern "C" {
+  extern int js_open_file(const char* path, const char* mode);
+  extern void js_close_file(int fd);
+}
+
 namespace {
 
 struct Impl : SDL_RWops {
@@ -150,6 +155,11 @@ const char* SDL_GetError() { return 0; }
 void SDL_SetError(const char*) {}
 
 SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
+  mesg("SDL_RWFromFile(\"%s\", \"%s\")\n", path, mode);
+
+  int fd = js_open_file(path, mode);
+  js_close_file(fd);
+
 #if 0
   PP_Resource file_system =
       ppb.file_system->Create(g_instance,
