@@ -46,7 +46,7 @@ static inline char *strdup(const char *str)
 #endif /* Choose your platform */
 
 #ifndef LIBDIR
-#if defined(unix) || defined(__MACH__)
+#if defined(unix) || defined(__MACH__) || defined(__EMSCRIPTEN__)
 #define LIBDIR	"/Maelstrom"
 #else
 #define LIBDIR	CUR_DIR

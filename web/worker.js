@@ -2,7 +2,21 @@ const kViewportWidth = 640;
 const kViewportHeight = 480;
 
 var Module = {
-  preRun: [],
+  preRun: [
+    /*
+    function() {
+      try {
+        FS.mkdir('/Maelstrom');
+        FS.mount(IDBFS, {}, '/Maelstrom');
+        addRunDependency("maelstrom-fs-setup");
+        FS.syncfs(true, function(err) {
+          removeRunDependency("maelstrom-fs-setup");
+        });
+      } catch (e) {
+      }
+    },
+    */
+  ],
   postRun: [],
   print: function(text) {
     if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
