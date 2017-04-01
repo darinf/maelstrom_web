@@ -108,6 +108,7 @@ function createBuffer(size) {
 }
 
 function draw(buffer, x, y, width, height) {
+  console.log("draw called\n");
   postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
 }
 

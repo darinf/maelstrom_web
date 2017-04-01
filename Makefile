@@ -90,7 +90,7 @@ SOURCES= \
 #	port.c \
 
 JS_LIBS= \
-	jslib/file.js \
+	jslib/canvas.js \
 	$(NULL)
 
 INC_PATHS=. netlogic screenlib maclib SDL ppapi

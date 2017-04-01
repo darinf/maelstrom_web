@@ -6,14 +6,18 @@ rootfiles="out/Release/maelstrom.* web/* Maelstrom_Fonts Maelstrom_Sprites Maels
 images="Images/*"
 
 make
+
+echo -n "copying files to $outdir "
+
 for f in $rootfiles; do
-  echo "cp -f $f $outdir"
+  echo -n "."
   cp -f $f $outdir
 done
 mkdir -p "$outdir/Images"
 chmod a+rx "$outdir/Images"
 for f in $images; do
-  echo "cp -f $f $outdir/Images"
+  echo -n "."
   cp -f $f "$outdir/Images"
 done
 chmod -R a+r $outdir/*
+echo
