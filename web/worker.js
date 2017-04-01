@@ -3,19 +3,80 @@ const kViewportHeight = 480;
 
 var Module = {
   preRun: [
-    /*
     function() {
-      try {
-        FS.mkdir('/Maelstrom');
-        FS.mount(IDBFS, {}, '/Maelstrom');
-        addRunDependency("maelstrom-fs-setup");
-        FS.syncfs(true, function(err) {
-          removeRunDependency("maelstrom-fs-setup");
+      // Ensure resources are downloaded.
+      addRunDependency("filesystem");
+
+      FS.mkdir("/Maelstrom");
+      FS.mount(IDBFS, {}, "/Maelstrom");
+
+      FS.syncfs(true, function (err) {
+        var filesRemaining = 0;
+
+        function doneWithFile() {
+          if (--filesRemaining == 0) {
+            FS.syncfs(false, function (err) {
+              removeRunDependency("filesystem");
+            });
+          }
+        }
+
+        FS.mkdir("/Maelstrom/Images");
+
+        [
+          "Maelstrom_Fonts",
+          "Maelstrom_Sounds",
+          "Maelstrom_Sprites",
+          "Maelstrom-Scores",
+          "icon.bmp",
+          "Images/Maelstrom_Icon#100.cicn",
+          "Images/Maelstrom_Icon#101.cicn",
+          "Images/Maelstrom_Icon#102.cicn",
+          "Images/Maelstrom_Icon#103.cicn",
+          "Images/Maelstrom_Icon#104.cicn",
+          "Images/Maelstrom_Icon#110.cicn",
+          "Images/Maelstrom_Icon#128.cicn",
+          "Images/Maelstrom_Icon#129.cicn",
+          "Images/Maelstrom_Icon#130.cicn",
+          "Images/Maelstrom_Icon#131.cicn",
+          "Images/Maelstrom_Icon#132.cicn",
+          "Images/Maelstrom_Icon#133.cicn",
+          "Images/Maelstrom_Icon#134.cicn",
+          "Images/Maelstrom_Icon#135.cicn",
+          "Images/Maelstrom_Icon#136.cicn",
+          "Images/Maelstrom_Icon#137.cicn",
+          "Images/Maelstrom_Titles#100.bmp",
+          "Images/Maelstrom_Titles#101.bmp",
+          "Images/Maelstrom_Titles#102.bmp",
+          "Images/Maelstrom_Titles#128.bmp",
+          "Images/Maelstrom_Titles#129.bmp",
+          "Images/Maelstrom_Titles#130.bmp",
+          "Images/Maelstrom_Titles#133.bmp",
+          "Images/Maelstrom_Titles#134.bmp",
+          "Images/Maelstrom_Titles#135.bmp",
+          "Images/Maelstrom_Titles#999.bmp"
+        ].forEach(function(filename) {
+          var filepath = "/Maelstrom/" + filename;
+          var exists;
+          try {
+            exists = (FS.lookupPath(filepath).node != null);
+          } catch (e) {
+            exists = false;
+          }
+          if (!exists) {
+            filesRemaining++;
+            fetch(filename.replace('#', '%23'), {credentials: "include"}).then(function(response) {
+              response.arrayBuffer().then(function(buffer) {
+                FS.writeFile(filepath, new Uint8Array(buffer), {encoding: "binary"});
+                doneWithFile();
+              });
+            });
+          }
         });
-      } catch (e) {
-      }
-    },
-    */
+        if (filesRemaining == 0)
+          removeRunDependency("filesystem");
+      });
+    }
   ],
   postRun: [],
   print: function(text) {
