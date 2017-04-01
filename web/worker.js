@@ -21,7 +21,10 @@ var Module = {
           }
         }
 
-        FS.mkdir("/Maelstrom/Images");
+        try {
+          FS.mkdir("/Maelstrom/Images");
+        } catch (e) {
+        }
 
         [
           "Maelstrom_Fonts",
