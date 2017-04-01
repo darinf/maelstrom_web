@@ -1,4 +1,4 @@
-# vim:ts=8 sw=8 noet
+# vim:ts=4 sw=4 sts=4 noet
 
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -88,6 +88,10 @@ SOURCES= \
 	$(NULL)
 
 #	port.c \
+
+JS_LIBS= \
+	jslib/file.js \
+	$(NULL)
 
 INC_PATHS=. netlogic screenlib maclib SDL ppapi
 

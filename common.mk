@@ -1,3 +1,5 @@
+# vim:noet ts=4 sw=4 sts=4
+
 OUTBASE ?= .
 CONFIG_DIR := $(CONFIG)
 OUTDIR := $(OUTBASE)/out/$(CONFIG_DIR)
@@ -5,7 +7,7 @@ STAMPDIR ?= $(OUTDIR)
 
 EM_CC = emcc
 EM_CXX = emcc
-EM_CFLAGS = -Wall -s WASM=1 --js-library "web/support_lib.js"
+EM_CFLAGS = -Wall -s WASM=1
 
 
 # Convert a source path to a object file path.
@@ -84,8 +86,10 @@ endef
 # $3 = Libs
 # $4 = Deps
 define LINK_RULE
-$(OUTDIR)/$(1).js: $(foreach src,$(SOURCES),$(call SRC_TO_OBJ,$(src)))
-	$(EM_CC) -o $$@ $(POSIX_CFLAGS) $(EM_CFLAGS) $(CFLAGS) $$^
+$(OUTDIR)/$(1).js: $(foreach src,$(SOURCES),$(call SRC_TO_OBJ,$(src))) $(JS_LIBS)
+	$(EM_CC) -o $$@ $(POSIX_CFLAGS) $(EM_CFLAGS) $(CFLAGS) \
+		$(foreach lib,$(JS_LIBS),--js-library $(lib)) \
+		$(foreach src,$(SOURCES),$(call SRC_TO_OBJ,$(src)))
 endef
 
 

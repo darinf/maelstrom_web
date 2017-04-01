@@ -6,6 +6,7 @@
 //XXX#include <ppapi/c/pp_completion_callback.h>
 //XXX#include <ppapi/c/pp_errors.h>
 
+#include "jslib/file.h"
 #include "SDL/SDL_endian.h"
 #include "myerror.h"
 //XXX #include "ppb.h"
@@ -14,11 +15,6 @@
   error("Function not implemented: %s\n", __FUNCTION__)
 
 //XXX extern PP_Instance g_instance;
-
-extern "C" {
-  extern int js_open_file(const char* path, const char* mode);
-  extern void js_close_file(int fd);
-}
 
 namespace {
 
@@ -157,8 +153,8 @@ void SDL_SetError(const char*) {}
 SDL_RWops* SDL_RWFromFile(const char* path, const char* mode) {
   mesg("SDL_RWFromFile(\"%s\", \"%s\")\n", path, mode);
 
-  int fd = js_open_file(path, mode);
-  js_close_file(fd);
+  int fd = jslib_file_open(path, mode);
+  jslib_file_close(fd);
 
 #if 0
   PP_Resource file_system =
