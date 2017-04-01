@@ -93,7 +93,7 @@ JS_LIBS= \
 	jslib/canvas.js \
 	$(NULL)
 
-INC_PATHS=. netlogic screenlib maclib SDL ppapi
+INC_PATHS=. netlogic screenlib maclib SDL
 
 
 #

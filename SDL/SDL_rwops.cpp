@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "jslib/file.h"
 #include "SDL/SDL_endian.h"
 #include "myerror.h"
 

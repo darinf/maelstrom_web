@@ -10,11 +10,20 @@
 /* 								 */
 /* ------------------------------------------------------------- */
 
+#include <emscripten.h>
+
 #include "Maelstrom_Globals.h"
 #include "buttonlist.h"
 #include "load.h"
 #include "fastrand.h"
 #include "checksum.h"
+
+#define DO_ASYNC_DELAY(func, delay)  \
+  EM_ASM_ARGS({                      \
+    setTimeout(function() {          \
+      ccall(#func);                  \
+    }, $0);                          \
+  }, delay)
 
 /* External functions used in this file */
 extern int DoInitializations(Uint32 video_flags);		/* init.cc */
@@ -165,7 +174,7 @@ void PrintUsage(void)
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
-extern "C" int main(int argc, const char *argv[])
+int main(int argc, const char *argv[])
 {
 	/* Command line flags */
 	int doprinthigh = 0;
@@ -173,7 +182,6 @@ extern "C" int main(int argc, const char *argv[])
 	Uint32 video_flags = SDL_SWSURFACE;
 
 	/* Normal variables */
-	SDL_Event event;
 	LibPath::SetExePath(argv[0]);
 
 #ifndef __WIN95__
@@ -286,8 +294,30 @@ extern "C" int main(int argc, const char *argv[])
 	screen->Fade();		/* Fade-out */
 	Delay(SOUND_DELAY);
 	gUpdateBuffer = true;
-	while ( sound->Playing() )
-		Delay(SOUND_DELAY);
+
+  DO_ASYNC_DELAY(Maelstrom_AdvanceAfterSound, SOUND_DELAY);
+
+  return 0;
+}
+
+extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_DoMainLoop();
+
+extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_AdvanceAfterSound() {
+  mesg(">>> calling sound->Playing\n");
+
+  if (sound->Playing()) {
+    DO_ASYNC_DELAY(Maelstrom_AdvanceAfterSound, SOUND_DELAY);
+    return;
+  }
+
+  mesg(">>> calling DoMainLoop\n");
+  Maelstrom_DoMainLoop();
+}
+
+void Maelstrom_DoMainLoop() {
+	SDL_Event event;
+
+  mesg(">>> entering main loop\n");
 
 	while ( gRunning ) {
 		
@@ -296,7 +326,8 @@ extern "C" int main(int argc, const char *argv[])
 			DrawMainScreen();
 
 		/* -- Get an event */
-		screen->WaitEvent(&event);
+		if (!screen->WaitEvent(&event))
+      return;
 
 		/* -- Handle it! */
 		if ( event.type == SDL_KEYDOWN ) {
@@ -402,7 +433,6 @@ extern "C" int main(int argc, const char *argv[])
 	}
 	screen->Fade();
 	Delay(60);
-	return(0);
 }	/* -- main */
 
 

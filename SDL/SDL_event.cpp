@@ -80,7 +80,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
 #endif
 
 int SDL_PollEvent(SDL_Event* event) { 
-  error("Unimplemented: SDL_PollEvent");
+  error("Unimplemented: SDL_PollEvent\n");
 #if 0
   for (;;) {
     PP_Resource input_resource = g_input_queue.GetOrFail();
@@ -95,11 +95,11 @@ int SDL_PollEvent(SDL_Event* event) {
       break;
   }
 #endif
-  return 1;
+  return 0;
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
-  error("Unimplemented: SDL_WaitEvent");
+  error("Unimplemented: SDL_WaitEvent\n");
 #if 0
   for (;;) {
     PP_Resource input_resource = g_input_queue.Get();
@@ -114,7 +114,7 @@ int SDL_WaitEvent(SDL_Event* event) {
       break;
   }
 #endif
-  return 1;
+  return 0;
 }
 
 const char* SDL_GetKeyName(SDLKey key) {

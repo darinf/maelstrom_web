@@ -416,7 +416,8 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
         switch (image_format) {
           case PP_IMAGEDATAFORMAT_BGRA_PREMUL:
           */
-            packed_color = color.b | (color.g << 8) | (color.r << 16) | 0xFF000000;
+            // RGBA
+            packed_color = color.r | (color.g << 8) | (color.b << 16) | 0xFF000000;
             /*
             break;
           default:

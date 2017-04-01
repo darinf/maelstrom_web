@@ -92,7 +92,7 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
   ppb.core->ReleaseResource(audio_config);
   return 0;
 #endif
-  return -1;
+  return 0;
 }
 
 void SDL_CloseAudio() {
