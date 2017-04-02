@@ -355,9 +355,9 @@ void SDL_UnlockSurface(SDL_Surface* surface) {
 }
 
 void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
-  mesg("SDL_UpdateRects [%p num=%u]\n", surface, num_rects);
-  for (int i = 0; i < num_rects; ++i)
-    mesg(" (%u,%u,%u,%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+  //mesg("SDL_UpdateRects [%p num=%u]\n", surface, num_rects);
+  //for (int i = 0; i < num_rects; ++i)
+  //  mesg(" (%u,%u,%u,%u)\n", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
 
   if (surface != video_surface) {
     mesg("SDL_UpdateRects: can only be called on the video surface!\n");

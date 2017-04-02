@@ -1,6 +1,10 @@
+#include <emscripten.h>
+
 #include "SDL_event.h"
 
 #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 
 //XXX #include <ppapi/c/ppb_input_event.h>
@@ -8,10 +12,14 @@
 //XXX #include "ppb.h"
 //XXX #include "pp_resource_queue.h"
 
-#if 0
-extern PPResourceQueue g_input_queue;
+struct LinkedEvent {
+  LinkedEvent* next;
+  SDL_Event data;
+};
 
-static int ToUnicode(uint32_t key_code, PP_Resource input_event) {
+static LinkedEvent* next_event = NULL;
+
+static int ToUnicode(uint32_t key_code) {
   // NOTE: We should really handle PP_INPUTEVENT_TYPE_CHAR instead,
   // but this hacky approach is good enough for a subset of ASCII.
 
@@ -19,9 +27,11 @@ static int ToUnicode(uint32_t key_code, PP_Resource input_event) {
     return (int) key_code;
 
   if (key_code >= SDLK_a && key_code <= SDLK_z) {
+  /*
     uint32_t modifiers = ppb.input_event->GetModifiers(input_event);
     if (modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY)
       return (int) key_code;
+   */
 
     return (int) key_code + 32;
   }
@@ -34,6 +44,34 @@ static int ToUnicode(uint32_t key_code, PP_Resource input_event) {
 
   return 0;
 }
+
+extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_OnInputEvent(int type, int key_code) {
+  LinkedEvent* event = new LinkedEvent();
+  event->next = NULL;
+  event->data.type = (Uint32) type;
+  event->data.key.keysym.sym = (SDLKey) key_code;
+  event->data.key.keysym.mod = 0;
+  event->data.key.keysym.unicode = ToUnicode(key_code);
+  if (event->data.type == SDL_KEYDOWN) {
+    event->data.key.state = SDL_PRESSED;
+  } else if (event->data.type == SDL_KEYUP) {
+    event->data.key.state = SDL_RELEASED;
+  }
+
+  // Append to linked list
+  if (next_event) {
+    // Find last, and make this new event the last.
+    LinkedEvent* last = next_event;
+    while (last->next)
+      last = last->next;
+    last->next = event;
+  } else {
+    next_event = event;
+  }
+}
+
+#if 0
+extern PPResourceQueue g_input_queue;
 
 static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
   bool translated = true;
@@ -80,41 +118,24 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
 #endif
 
 int SDL_PollEvent(SDL_Event* event) { 
-  error("Unimplemented: SDL_PollEvent\n");
-#if 0
-  for (;;) {
-    PP_Resource input_resource = g_input_queue.GetOrFail();
-    if (!input_resource)
-      return 0;
+  if (!event)
+    return next_event ? 1 : 0;
 
-    bool translated = TranslateEvent(input_resource, event);
+  if (!next_event)
+    return 0;
 
-    ppb.core->ReleaseResource(input_resource);
+  LinkedEvent* temp = next_event;
+  next_event = temp->next;
 
-    if (translated)
-      break;
-  }
-#endif
-  return 0;
+  memcpy(event, &temp->data, sizeof(SDL_Event));
+  delete temp;
+
+  return 1;
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
-  error("Unimplemented: SDL_WaitEvent\n");
-#if 0
-  for (;;) {
-    PP_Resource input_resource = g_input_queue.Get();
-    if (!input_resource)
-      return 0;
-
-    bool translated = TranslateEvent(input_resource, event);
-
-    ppb.core->ReleaseResource(input_resource);
-
-    if (translated)
-      break;
-  }
-#endif
-  return 0;
+  // XXX we have no way of implementing thread blocking here.
+  return SDL_PollEvent(event);
 }
 
 const char* SDL_GetKeyName(SDLKey key) {

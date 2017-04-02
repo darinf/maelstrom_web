@@ -17,6 +17,7 @@
 #include "load.h"
 #include "fastrand.h"
 #include "checksum.h"
+#include "netlogic/globals.h"
 
 #define DO_ASYNC_DELAY(func, delay)  \
   EM_ASM_ARGS({                      \
@@ -67,7 +68,7 @@ static void RunPlayGame(void)
 	gNoDelay = 1;
 	sound->PlaySound(gNewLife, 5);
 	Delay(SOUND_DELAY);
-	NewGame();
+	NewGame_Init();
 	Message(NULL);		/* Clear any messages */
 }
 static void RunQuitGame(void)
@@ -171,6 +172,8 @@ void PrintUsage(void)
 	error("\n");
 	exit(1);
 }
+
+extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_DoMainLoop();
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
@@ -295,13 +298,13 @@ int main(int argc, const char *argv[])
 	Delay(SOUND_DELAY);
 	gUpdateBuffer = true;
 
-  DO_ASYNC_DELAY(Maelstrom_AdvanceAfterSound, SOUND_DELAY);
+  //DO_ASYNC_DELAY(Maelstrom_AdvanceAfterSound, SOUND_DELAY);
+  emscripten_set_main_loop(Maelstrom_DoMainLoop, 30, true);
 
   return 0;
 }
 
-extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_DoMainLoop();
-
+/*
 extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_AdvanceAfterSound() {
   mesg(">>> calling sound->Playing\n");
 
@@ -313,13 +316,17 @@ extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_AdvanceAfterSound() {
   mesg(">>> calling DoMainLoop\n");
   Maelstrom_DoMainLoop();
 }
+*/
 
 void Maelstrom_DoMainLoop() {
 	SDL_Event event;
 
-  mesg(">>> entering main loop\n");
-
 	while ( gRunning ) {
+    
+    if ( gGameOn ) {
+      NewGame_Iteration();
+      return;
+    }
 		
 		/* Update the screen if necessary */
 		if ( gUpdateBuffer )
@@ -328,9 +335,11 @@ void Maelstrom_DoMainLoop() {
 		/* -- Get an event */
 		if (!screen->WaitEvent(&event))
       return;
+    mesg(">>> WaitEvent returned success!\n");
 
 		/* -- Handle it! */
 		if ( event.type == SDL_KEYDOWN ) {
+      mesg(">>> got SDL_KEYDOWN\n");
 			switch (event.key.keysym.sym) {
 
 				/* -- Toggle fullscreen */
@@ -363,7 +372,7 @@ void Maelstrom_DoMainLoop() {
 						Delay(SOUND_DELAY);
 						sound->PlaySound(gNewLife, 5);
 						Delay(SOUND_DELAY);
-						NewGame();
+						NewGame_Init();
 					}
 					break;
 
@@ -423,11 +432,13 @@ void Maelstrom_DoMainLoop() {
 		} else
 		/* -- Handle mouse clicks */
 		if ( event.type == SDL_MOUSEBUTTONDOWN ) {
+      mesg(">>> got SDL_MOUSEBUTTONDOWN\n");
 			buttons.Activate_Button(event.button.x, 
 						event.button.y);
 		} else
 		/* -- Handle window close requests */
 		if ( event.type == SDL_QUIT ) {
+      mesg(">>> got SDL_QUIT\n");
 			RunQuitGame();
 		}
 	}

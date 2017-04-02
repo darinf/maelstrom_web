@@ -108,11 +108,29 @@ function createBuffer(size) {
 }
 
 function draw(buffer, x, y, width, height) {
-  console.log("draw called\n");
+  //console.log("draw called\n");
   postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
 }
 
 function reclaimBuffer(buffer) {
+}
+
+function handleInput(eventType, keyCode) {
+  console.log("worker: handleInput\n");
+
+  //events.push({type: eventType, keyCode: keyCode});
+
+  var typeCode;
+  switch (eventType) {
+    case "keydown":
+      typeCode = 1;  // SDL_KEYDOWN
+      break;
+    case "keyup":
+      typeCode = 2;  // SDL_KEYUP
+      break;
+  }
+
+  Module.ccall('Maelstrom_OnInputEvent', '', ['number', 'number'], [typeCode, keyCode]);
 }
 
 function start() {
@@ -131,6 +149,9 @@ onmessage = function(e) {
       break;
     case "reclaim":
       reclaimBuffer(e.data.params[0]);
+      break;
+    case "input":
+      handleInput(e.data.params[0], e.data.params[1]);
       break;
   }
 }

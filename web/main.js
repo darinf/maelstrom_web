@@ -32,6 +32,10 @@ class CanvasController {
 
     this.worker_ = new Worker("worker.js");
     this.worker_.onmessage = this.onHandleMessage_.bind(this);
+
+    //window.addEventListener("mousedown", this.onHandleInputEvent_.bind(this), false);
+    window.addEventListener("keydown", this.onHandleInputEvent_.bind(this), false);
+    window.addEventListener("keyup", this.onHandleInputEvent_.bind(this), false);
   }
 
   start() {
@@ -49,6 +53,16 @@ class CanvasController {
 
   onHandleMessage_(e) {
     this[e.data.command].apply(this, e.data.params);
+  }
+
+  onHandleInputEvent_(e) {
+    console.log(e.type + ": " + e.keyCode);
+    var params = [e.type];
+    if (e.type == "keydown" || e.type == "keyup") {
+      params.push(e.keyCode);
+    }
+    this.worker_.postMessage({command: "input", params: params}, []);
+    e.preventDefault();
   }
 
   onDraw_() {

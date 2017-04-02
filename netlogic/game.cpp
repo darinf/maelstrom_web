@@ -428,7 +428,7 @@ void DrawStatus(Bool first, Bool ForceDraw)
 /* ----------------------------------------------------------------- */
 /* -- Start a new game */
 
-void NewGame(void)
+void NewGame_Init(void)
 {
 	int i;
 
@@ -470,17 +470,21 @@ void NewGame(void)
 	gNumSprites = 0;
 
 	NextWave();
+} /* -- NewGame_Init */
 
+void NewGame_Iteration() {
 	/* Play the game, dammit! */
-	while ( (RunFrame() > 0) && gGameOn )
+	if ( (RunFrame() > 0) && gGameOn )
 		DoHouseKeeping();
+} /* -- NewGame_Iteration */
 	
+void NewGame_Shutdown() {
 /* -- Do the game over stuff */
 
 	DoGameOver();
 	screen->ShowCursor();
 	delete geneva;
-}	/* -- NewGame */
+}	/* -- NewGame_Shutdown */
 
 
 /* ----------------------------------------------------------------- */

@@ -1,6 +1,8 @@
 /* ----------------------------------------------------------------- */
 /* -- Special logic module variables */
 
+#include "object.h"
+
 // in game.cc :
 extern int	gDisplayed;
 extern int	gGameOn;

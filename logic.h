@@ -15,7 +15,9 @@ extern int  SpecialKey(SDL_keysym key);
 extern int GetScore(void);
 
 /* From game.cpp */
-extern void NewGame(void);
+extern void NewGame_Init(void);
+extern void NewGame_Iteration(void);
+extern void NewGame_Shutdown(void);
 
 /* From about.cpp */
 extern void DoAbout(void);

@@ -16,6 +16,5 @@ void SDL_Delay(Uint32 msec) {
 }
 
 Uint32 SDL_GetTicks() {
-  //XXX return static_cast<Uint32>(ppb.core->GetTimeTicks() * 1000.0);
-  return 0;
+  return (Uint32) emscripten_get_now();
 }
