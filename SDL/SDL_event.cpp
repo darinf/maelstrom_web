@@ -135,12 +135,14 @@ int SDL_PollEvent(SDL_Event* event) {
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
-  if (!SDL_PollEvent(event)) {
-    // TODO: we should really block here until we get an event.
-    SDL_Delay(10);
-    return 0;
-  }
-  return 1;
+  if (SDL_PollEvent(event))
+    return 1;
+
+  // This blocks until SDL_PollEvent would succeed.
+  EM_ASM(
+    worker_get_event();
+  );
+  return SDL_PollEvent(event);
 }
 
 const char* SDL_GetKeyName(SDLKey key) {

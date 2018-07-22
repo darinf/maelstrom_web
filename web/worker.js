@@ -166,6 +166,14 @@ function handleInput(eventType, keyCode) {
   Module.ccall('Maelstrom_OnInputEvent', '', ['number', 'number'], [typeCode, keyCode]);
 }
 
+function worker_get_event() {
+  var int8 = eventPipeReader.read();  // Blocks until we have some data
+  var json = new TextDecoder('utf-8').decode(int8);
+  var data = JSON.parse(json);
+
+  handleInput(data[0], data[1]);
+}
+
 function start(eventPipeSAB, renderPipeSAB) {
   var eventPipe = new PipeBuffer();
   eventPipe.initializeFromSAB(eventPipeSAB);

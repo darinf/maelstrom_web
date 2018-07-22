@@ -76,10 +76,16 @@ class CanvasController {
       params.push(e.keyCode);
     }
     //XXX this.worker_.postMessage({command: "input", params: params}, []);
+
+    var str = JSON.stringify(params);
+    this.eventPipeWriter_.write(new TextEncoder().encode(str));
+
     e.preventDefault();
   }
 
   onDraw_() {
+    this.eventPipeWriter_.doPendingWrites();
+
     this.updateDrawList_();
     while (this.drawList_.length > 0)
       this.drawImage_.apply(this, this.drawList_.shift());

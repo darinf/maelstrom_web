@@ -19,12 +19,14 @@
 #include "checksum.h"
 #include "netlogic/globals.h"
 
+/*
 #define DO_ASYNC_DELAY(func, delay)  \
   EM_ASM_ARGS({                      \
     setTimeout(function() {          \
       ccall(#func);                  \
     }, $0);                          \
   }, delay)
+*/
 
 /* External functions used in this file */
 extern int DoInitializations(Uint32 video_flags);		/* init.cc */
