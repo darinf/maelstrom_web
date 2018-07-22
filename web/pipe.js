@@ -81,7 +81,7 @@ class PipeWriter {
     this.buffer_ = buffer;
     this.send_queue_ = new Array();
   }
-  write(bytes) {
+  write(bytes) {  // Takes Int8Array
     var maxBytes = this.buffer_.maxBytes;
     if (bytes.byteLength > maxBytes) {
       throw "oops: message is too long to send!";

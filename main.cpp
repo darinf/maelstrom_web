@@ -334,8 +334,10 @@ void DoMainLoop() {
 			DrawMainScreen();
 
 		/* -- Get an event */
-		if (!screen->WaitEvent(&event))
+		if (!screen->WaitEvent(&event)) {
+      mesg(">>> WaitEvent failed, exiting DoMainLoop!\n");
       return;
+    }
     mesg(">>> WaitEvent returned success!\n");
 
 		/* -- Handle it! */

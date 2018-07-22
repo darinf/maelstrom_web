@@ -1,5 +1,16 @@
+importScripts("pipe.js");
+
+var eventPipeReader;
+var renderPipeWriter;
+
 const kViewportWidth = 640;
 const kViewportHeight = 480;
+
+function sleep(msec) {
+  var sab = new SharedArrayBuffer(4);
+  var int32 = new Int32Array(sab);
+  Atomics.wait(int32, 0, 0, msec);
+}
 
 var Module = {
   preRun: [
@@ -107,9 +118,31 @@ function createBuffer(size) {
   return data.buffer;
 }
 
-function worker_draw(buffer, x, y, width, height) {
-  //console.log("draw called\n");
-  postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
+function worker_flush() {
+  renderPipeWriter.doPendingWrites();
+}
+
+function worker_draw(pixels, x, y, width, height) {
+  console.log("draw called: [" + x + ", " + y + ", " + width + ", " + height + "]");
+  //XXX postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
+  //renderPipeWriter.write
+
+  // TODO: reduce copies here by direct accessing the pipe buffer.
+
+  var uint32 = new Uint32Array(4 + width * height);
+  uint32[0] = x;
+  uint32[1] = y;
+  uint32[2] = width;
+  uint32[3] = height;
+  uint32.set(new Uint32Array(pixels.buffer, pixels.byteOffset, width * height), 4);
+
+  renderPipeWriter.write(new Int8Array(uint32.buffer));
+
+  // Flush writes
+  while (renderPipeWriter.hasPendingWrites()) {
+    sleep(10);
+    renderPipeWriter.doPendingWrites();
+  }
 }
 
 function reclaimBuffer(buffer) {
@@ -133,11 +166,25 @@ function handleInput(eventType, keyCode) {
   Module.ccall('Maelstrom_OnInputEvent', '', ['number', 'number'], [typeCode, keyCode]);
 }
 
-function start() {
+function start(eventPipeSAB, renderPipeSAB) {
+  var eventPipe = new PipeBuffer();
+  eventPipe.initializeFromSAB(eventPipeSAB);
+  eventPipeReader = new PipeReader(eventPipe);
+
+  var renderPipe = new PipeBuffer();
+  renderPipe.initializeFromSAB(renderPipeSAB);
+  renderPipeWriter = new PipeWriter(renderPipe);
+
+  if (renderPipe.maxBytes != ((4 * 4) + (kViewportWidth * kViewportHeight * 4)))
+    throw "Oops! unexpected render pipe max bytes: " + renderPipe.maxBytes;
+
+  console.log("fetching maelstrom.wasm...");
+
   fetch("maelstrom.wasm", {credentials: "include"}).then(function(response) {
     response.arrayBuffer().then(function(buffer) {
       Module["wasmBinary"] = buffer;
       importScripts("maelstrom.js");
+      console.log("done importing maelstrom.js");
     });
   });
 }
@@ -145,13 +192,15 @@ function start() {
 onmessage = function(e) {
   switch (e.data.command) {
     case "start":
-      start();
+      start(e.data.params[0], e.data.params[1]);
       break;
+    /*
     case "reclaim":
       reclaimBuffer(e.data.params[0]);
       break;
     case "input":
       handleInput(e.data.params[0], e.data.params[1]);
       break;
+    */    
   }
 }
