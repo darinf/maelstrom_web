@@ -2,6 +2,7 @@ importScripts("pipe.js");
 
 var eventPipeReader;
 var renderPipeWriter;
+var currentEvent;
 
 const kViewportWidth = 640;
 const kViewportHeight = 480;
@@ -166,12 +167,46 @@ function handleInput(eventType, keyCode) {
   Module.ccall('Maelstrom_OnInputEvent', '', ['number', 'number'], [typeCode, keyCode]);
 }
 
-function worker_get_event() {
-  var int8 = eventPipeReader.read();  // Blocks until we have some data
+function setCurrentEvent(int8) {
   var json = new TextDecoder('utf-8').decode(int8);
   var data = JSON.parse(json);
 
-  handleInput(data[0], data[1]);
+  var type;
+  switch (data[0]) {
+    case "keydown":
+      type = 1;  // SDL_KEYDOWN
+      break;
+    case "keyup":
+      type = 2;  // SDL_KEYUP
+      break;
+    default:
+      throw "oops: unknown event type [" + data[0] + "]";
+  }
+
+  currentEvent = {type: type, code: data[1]};
+}
+
+function worker_get_event_type() {
+  return currentEvent.type;
+}
+
+function worker_get_event_code() {
+  return currentEvent.code;
+}
+
+function worker_poll_event() {
+  var int8 = eventPipeReader.tryRead();
+  if (!int8) {
+    currentEvent = null;
+    return 0;
+  }
+  setCurrentEvent(int8);
+  return 1;
+}
+
+function worker_wait_event() {
+  var int8 = eventPipeReader.read();  // Blocks until we have some data
+  setCurrentEvent(int8);
 }
 
 function start(eventPipeSAB, renderPipeSAB) {

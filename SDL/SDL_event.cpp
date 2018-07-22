@@ -13,12 +13,14 @@
 //XXX #include "ppb.h"
 //XXX #include "pp_resource_queue.h"
 
+#if 0
 struct LinkedEvent {
   LinkedEvent* next;
   SDL_Event data;
 };
 
 static LinkedEvent* next_event = NULL;
+#endif
 
 static int ToUnicode(uint32_t key_code) {
   // NOTE: We should really handle PP_INPUTEVENT_TYPE_CHAR instead,
@@ -46,6 +48,29 @@ static int ToUnicode(uint32_t key_code) {
   return 0;
 }
 
+static void BuildEvent(int type, int key_code, SDL_Event* event) {
+  event->type = (Uint32) type;
+  event->key.keysym.sym = (SDLKey) key_code;
+  event->key.keysym.mod = 0;
+  event->key.keysym.unicode = ToUnicode(key_code);
+  if (event->type == SDL_KEYDOWN) {
+    event->key.state = SDL_PRESSED;
+  } else if (event->type == SDL_KEYUP) {
+    event->key.state = SDL_RELEASED;
+  }
+}
+
+static void ReadEvent(SDL_Event* event) {
+  int type = EM_ASM_INT({
+    return worker_get_event_type();
+  });
+  int code = EM_ASM_INT({
+    return worker_get_event_code();
+  });
+  BuildEvent(type, code, event);
+}
+
+#if 0
 extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_OnInputEvent(int type, int key_code) {
   LinkedEvent* event = new LinkedEvent();
   event->next = NULL;
@@ -70,6 +95,7 @@ extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_OnInputEvent(int type, int key_co
     next_event = event;
   }
 }
+#endif
 
 #if 0
 extern PPResourceQueue g_input_queue;
@@ -119,6 +145,7 @@ static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
 #endif
 
 int SDL_PollEvent(SDL_Event* event) { 
+/*
   if (!event)
     return next_event ? 1 : 0;
 
@@ -132,6 +159,16 @@ int SDL_PollEvent(SDL_Event* event) {
   delete temp;
 
   return 1;
+*/
+
+  int has_event = EM_ASM_INT({
+    return worker_poll_event();
+  });
+  if (!has_event)
+    return 0;
+
+  ReadEvent(event);
+  return 1;
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
@@ -139,10 +176,12 @@ int SDL_WaitEvent(SDL_Event* event) {
     return 1;
 
   // This blocks until SDL_PollEvent would succeed.
-  EM_ASM(
-    worker_get_event();
-  );
-  return SDL_PollEvent(event);
+  EM_ASM({
+    worker_wait_event();
+  });
+
+  ReadEvent(event);
+  return 1;
 }
 
 const char* SDL_GetKeyName(SDLKey key) {
