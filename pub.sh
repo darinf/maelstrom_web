@@ -1,11 +1,12 @@
 #!/bin/sh
 
-outdir="/var/www/html/wasm/maelstrom"
+outdir="out/pub"
 
 rootfiles="out/Release/maelstrom.* web/* Maelstrom_Fonts Maelstrom_Sprites Maelstrom_Sounds Maelstrom-Scores icon.bmp"
 images="Images/*"
 
 make
+mkdir -p $outdir
 
 echo -n "copying files to $outdir "
 
