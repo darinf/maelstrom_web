@@ -55,7 +55,7 @@ class CanvasController {
   // Commands from the worker:
 
   do_draw() {
-    console.log("do_draw");
+    //console.log("do_draw");
 
     this.updateDrawList_();
 

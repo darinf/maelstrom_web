@@ -67,7 +67,7 @@ static void RunPlayGame(void)
 {
 	gStartLives = 3;
 	gStartLevel = 1;
-	gNoDelay = 1;
+	gNoDelay = 0;
 	sound->PlaySound(gNewLife, 5);
 	Delay(SOUND_DELAY);
 	NewGame();

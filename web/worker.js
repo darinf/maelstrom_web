@@ -119,10 +119,6 @@ function createBuffer(size) {
   return data.buffer;
 }
 
-function worker_flush() {
-  renderPipeWriter.doPendingWrites();
-}
-
 function worker_draw(pixels, x, y, width, height) {
   //console.log("draw called: [" + x + ", " + y + ", " + width + ", " + height + "]");
 
