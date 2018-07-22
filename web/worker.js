@@ -107,7 +107,7 @@ function createBuffer(size) {
   return data.buffer;
 }
 
-function draw(buffer, x, y, width, height) {
+function worker_draw(buffer, x, y, width, height) {
   //console.log("draw called\n");
   postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
 }

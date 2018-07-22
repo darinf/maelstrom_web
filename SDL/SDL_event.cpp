@@ -1,6 +1,7 @@
 #include <emscripten.h>
 
 #include "SDL_event.h"
+#include "SDL_timer.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -134,8 +135,12 @@ int SDL_PollEvent(SDL_Event* event) {
 }
 
 int SDL_WaitEvent(SDL_Event* event) {
-  // XXX we have no way of implementing thread blocking here.
-  return SDL_PollEvent(event);
+  if (!SDL_PollEvent(event)) {
+    // TODO: we should really block here until we get an event.
+    SDL_Delay(10);
+    return 0;
+  }
+  return 1;
 }
 
 const char* SDL_GetKeyName(SDLKey key) {

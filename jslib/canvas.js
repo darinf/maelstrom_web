@@ -13,6 +13,6 @@ mergeInto(LibraryManager.library, {
     var mappedBuffer = new Uint8Array(buffer);
     mappedBuffer.set(mappedPixels);
 
-    draw(buffer, x, y, width, height);
+    worker_draw(buffer, x, y, width, height);
   },
 });

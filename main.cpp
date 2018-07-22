@@ -173,7 +173,7 @@ void PrintUsage(void)
 	exit(1);
 }
 
-extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_DoMainLoop();
+void DoMainLoop();
 
 /* ----------------------------------------------------------------- */
 /* -- Blitter main program */
@@ -299,7 +299,8 @@ int main(int argc, const char *argv[])
 	gUpdateBuffer = true;
 
   //DO_ASYNC_DELAY(Maelstrom_AdvanceAfterSound, SOUND_DELAY);
-  emscripten_set_main_loop(Maelstrom_DoMainLoop, 30, true);
+  //emscripten_set_main_loop(Maelstrom_DoMainLoop, 30, true);
+  DoMainLoop();
 
   return 0;
 }
@@ -318,7 +319,7 @@ extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_AdvanceAfterSound() {
 }
 */
 
-void Maelstrom_DoMainLoop() {
+void DoMainLoop() {
 	SDL_Event event;
 
 	while ( gRunning ) {
