@@ -70,7 +70,7 @@ static void RunPlayGame(void)
 	gNoDelay = 1;
 	sound->PlaySound(gNewLife, 5);
 	Delay(SOUND_DELAY);
-	NewGame_Init();
+	NewGame();
 	Message(NULL);		/* Clear any messages */
 }
 static void RunQuitGame(void)
@@ -327,22 +327,13 @@ void DoMainLoop() {
 	SDL_Event event;
 
 	while ( gRunning ) {
-    
-    if ( gGameOn ) {
-      NewGame_Iteration();
-      //return;
-    }
-		
+
 		/* Update the screen if necessary */
 		if ( gUpdateBuffer )
 			DrawMainScreen();
 
 		/* -- Get an event */
-		if (!screen->WaitEvent(&event)) {
-      mesg(">>> WaitEvent failed, exiting DoMainLoop!\n");
-      return;
-    }
-    mesg(">>> WaitEvent returned success!\n");
+		screen->WaitEvent(&event);
 
 		/* -- Handle it! */
 		if ( event.type == SDL_KEYDOWN ) {
@@ -379,7 +370,7 @@ void DoMainLoop() {
 						Delay(SOUND_DELAY);
 						sound->PlaySound(gNewLife, 5);
 						Delay(SOUND_DELAY);
-						NewGame_Init();
+						NewGame();
 					}
 					break;
 
