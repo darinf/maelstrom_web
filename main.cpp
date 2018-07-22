@@ -304,6 +304,8 @@ int main(int argc, const char *argv[])
   //emscripten_set_main_loop(Maelstrom_DoMainLoop, 30, true);
   DoMainLoop();
 
+  mesg(">>> exiting main()\n");
+
   return 0;
 }
 
@@ -328,7 +330,7 @@ void DoMainLoop() {
     
     if ( gGameOn ) {
       NewGame_Iteration();
-      return;
+      //return;
     }
 		
 		/* Update the screen if necessary */

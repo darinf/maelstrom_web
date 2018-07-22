@@ -141,7 +141,7 @@ function worker_draw(pixels, x, y, width, height) {
 
   // Flush writes
   while (renderPipeWriter.hasPendingWrites()) {
-    sleep(10);
+    sleep(1);
     renderPipeWriter.doPendingWrites();
   }
 }
