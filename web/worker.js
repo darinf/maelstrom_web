@@ -124,9 +124,7 @@ function worker_flush() {
 }
 
 function worker_draw(pixels, x, y, width, height) {
-  console.log("draw called: [" + x + ", " + y + ", " + width + ", " + height + "]");
-  //XXX postMessage({command: "draw", params: [buffer, x, y, width, height]}, [buffer]);
-  //renderPipeWriter.write
+  //console.log("draw called: [" + x + ", " + y + ", " + width + ", " + height + "]");
 
   // TODO: reduce copies here by direct accessing the pipe buffer.
 
@@ -144,27 +142,8 @@ function worker_draw(pixels, x, y, width, height) {
     sleep(1);
     renderPipeWriter.doPendingWrites();
   }
-}
 
-function reclaimBuffer(buffer) {
-}
-
-function handleInput(eventType, keyCode) {
-  console.log("worker: handleInput\n");
-
-  //events.push({type: eventType, keyCode: keyCode});
-
-  var typeCode;
-  switch (eventType) {
-    case "keydown":
-      typeCode = 1;  // SDL_KEYDOWN
-      break;
-    case "keyup":
-      typeCode = 2;  // SDL_KEYUP
-      break;
-  }
-
-  Module.ccall('Maelstrom_OnInputEvent', '', ['number', 'number'], [typeCode, keyCode]);
+  postMessage({command: "do_draw", params:[]});
 }
 
 function setCurrentEvent(int8) {
@@ -237,13 +216,5 @@ onmessage = function(e) {
     case "start":
       start(e.data.params[0], e.data.params[1]);
       break;
-    /*
-    case "reclaim":
-      reclaimBuffer(e.data.params[0]);
-      break;
-    case "input":
-      handleInput(e.data.params[0], e.data.params[1]);
-      break;
-    */    
   }
 }

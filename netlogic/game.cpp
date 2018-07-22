@@ -472,7 +472,7 @@ void NewGame(void)
 	NextWave();
 
 	/* Play the game, dammit! */
-	if ( (RunFrame() > 0) && gGameOn )
+	while ( (RunFrame() > 0) && gGameOn )
 		DoHouseKeeping();
 	
 /* -- Do the game over stuff */
