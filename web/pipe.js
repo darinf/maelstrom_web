@@ -93,9 +93,6 @@ class PipeWriter {
   hasPendingWrites() {
     return this.send_queue_.length > 0;
   }
-  clearPendingWrites() {
-    this.send_queue_ = new Array();
-  }
   doPendingWrites() {
     while (this.hasPendingWrites()) {
       if (!this.trySendNext_())
