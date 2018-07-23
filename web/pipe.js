@@ -1,3 +1,7 @@
+//
+// TODO: make this work more like a normal pipe (stream of bytes).
+//
+
 class PipeBuffer {
   constructor() {
     this.sab_ = null;
@@ -102,7 +106,7 @@ class PipeWriter {
   trySendNext_() {
     if (this.buffer_.writeCounter != this.buffer_.readCounter)
       return false;  // Waiting for reader
-    var bytes = this.send_queue_.pop();
+    var bytes = this.send_queue_.shift();
     this.buffer_.copyBytesIn(bytes);
     this.buffer_.incrementWriteCounter();
     Atomics.wake(this.buffer_.int32, 0, 1);

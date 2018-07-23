@@ -62,7 +62,7 @@ class CanvasController {
     if (this.drawList_.length > 0) {
       this.animator_.schedule();
     } else {
-      console.log("Warning: nothing to draw in do_draw().");
+      //console.log("Warning: nothing to draw in do_draw().");
     }
   }
 
@@ -73,7 +73,7 @@ class CanvasController {
   }
 
   onHandleInputEvent_(e) {
-    //console.log(e.type + ": " + e.keyCode);
+    console.log(e.type + ": " + e.keyCode);
     var params = [e.type];
     if (e.type == "keydown" || e.type == "keyup") {
       params.push(e.keyCode);
