@@ -83,8 +83,10 @@ class CanvasController {
     var str = JSON.stringify(params);
     this.eventPipeWriter_.write(new TextEncoder().encode(str));
 
-    if (this.eventPipeWriter_.hasPendingWrites())
+    if (this.eventPipeWriter_.hasPendingWrites()) {
+      console.log("!!! deferring input event");
       setTimeout(this.onFlushPendingEvents_.bind(this), 0);
+    }
 
     e.preventDefault();
   }
