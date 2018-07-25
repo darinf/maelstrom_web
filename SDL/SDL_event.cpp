@@ -67,7 +67,7 @@ static void ReadEvent(SDL_Event* event) {
   int code = EM_ASM_INT({
     return worker_get_event_code();
   });
-  mesg("ReadEvent: type=%d code=%d\n", type, code);
+  //mesg("ReadEvent: type=%d code=%d\n", type, code);
   BuildEvent(type, code, event);
 }
 

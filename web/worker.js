@@ -1,4 +1,4 @@
-importScripts("pipe.js");
+importScripts("pipe2.js");
 
 var eventPipeReader;
 var renderPipeWriter;
@@ -133,11 +133,13 @@ function worker_draw(pixels, x, y, width, height) {
 
   renderPipeWriter.write(new Int8Array(uint32.buffer));
 
+  /*
   // Flush writes
   while (renderPipeWriter.hasPendingWrites()) {
     sleep(1);
     renderPipeWriter.doPendingWrites();
   }
+  */
 
   postMessage({command: "do_draw", params:[]});
 }
@@ -187,14 +189,16 @@ function worker_wait_event() {
 function start(eventPipeSAB, renderPipeSAB) {
   var eventPipe = new PipeBuffer();
   eventPipe.initializeFromSAB(eventPipeSAB);
-  eventPipeReader = new PipeReader(eventPipe);
+  eventPipeReader = new MessagePipeReader(eventPipe);
 
   var renderPipe = new PipeBuffer();
   renderPipe.initializeFromSAB(renderPipeSAB);
-  renderPipeWriter = new PipeWriter(renderPipe);
+  renderPipeWriter = new MessagePipeWriter(renderPipe);
 
+/*
   if (renderPipe.maxBytes != ((4 * 4) + (kViewportWidth * kViewportHeight * 4)))
     throw "Oops! unexpected render pipe max bytes: " + renderPipe.maxBytes;
+*/
 
   console.log("fetching maelstrom.wasm...");
 

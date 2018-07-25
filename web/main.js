@@ -32,13 +32,14 @@ class CanvasController {
 
     this.eventPipe_ = new PipeBuffer();
     this.eventPipe_.initialize(4096);  // XXX
-    this.eventPipeWriter_ = new PipeWriter(this.eventPipe_);
+    this.eventPipeWriter_ = new MessagePipeWriter(this.eventPipe_);
 
     this.renderPipe_ = new PipeBuffer();
     this.renderPipe_.initialize(  // TODO: find a better way to do this
         (4 * 4) +          // x, y, width, height
-        (640 * 480 * 4));  // max canvas size
-    this.renderPipeReader_ = new PipeReader(this.renderPipe_);
+        (640 * 480 * 4) +  // max canvas size
+        (256));            // extra buffer for message framing
+    this.renderPipeReader_ = new MessagePipeReader(this.renderPipe_);
 
     this.worker_ = new Worker("worker.js");
     this.worker_.onmessage = this.onHandleMessage_.bind(this);
@@ -73,26 +74,34 @@ class CanvasController {
   }
 
   onHandleInputEvent_(e) {
-    console.log(e.type + ": " + e.keyCode);
+    //console.log(e.type + ": " + e.keyCode);
     var params = [e.type];
     if (e.type == "keydown" || e.type == "keyup") {
       params.push(e.keyCode);
     }
     //XXX this.worker_.postMessage({command: "input", params: params}, []);
 
-    var str = JSON.stringify(params);
-    this.eventPipeWriter_.write(new TextEncoder().encode(str));
+    // Overwrite
+    //XXX this.eventPipeWriter_.doPendingWrites();
+    //if (this.eventPipeWriter_.hasPendingWrites())
+    //  this.eventPipeWriter_.clearPendingWrites();
 
+    var str = JSON.stringify(params);
+    if (!this.eventPipeWriter_.tryWrite(new TextEncoder().encode(str)))
+      console.log("!!! dropping input event");
+
+/*
     if (this.eventPipeWriter_.hasPendingWrites()) {
       console.log("!!! deferring input event");
       setTimeout(this.onFlushPendingEvents_.bind(this), 0);
     }
+*/
 
     e.preventDefault();
   }
 
   onFlushPendingEvents_() {
-    this.eventPipeWriter_.doPendingWrites();
+    //XXX this.eventPipeWriter_.doPendingWrites();
   }
 
   onDraw_() {
@@ -117,14 +126,15 @@ class CanvasController {
       var int8 = this.renderPipeReader_.tryRead();
       if (!int8)
         return;
-      var uint32 = new Uint32Array(int8.buffer);
+      var uint32 = new Uint32Array(int8.buffer, int8.byteOffset);
 
       var x = uint32[0];
       var y = uint32[1];
       var width = uint32[2];
       var height = uint32[3];
 
-      var imageData = new ImageData(new Uint8ClampedArray(int8.buffer, 4 * 4), width, height);
+      var imageData = new ImageData(
+          new Uint8ClampedArray(int8.buffer, int8.byteOffset + 4 * 4), width, height);
 
       this.drawList_.push([imageData, x, y, width, height]);
     }
