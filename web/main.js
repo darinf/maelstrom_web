@@ -134,7 +134,7 @@ class CanvasController {
       var height = uint32[3];
 
       var imageData = new ImageData(
-          new Uint8ClampedArray(int8.buffer, int8.byteOffset + 4 * 4), width, height);
+          new Uint8ClampedArray(int8.buffer, int8.byteOffset + 4 * 4, 4 * width * height), width, height);
 
       this.drawList_.push([imageData, x, y, width, height]);
     }

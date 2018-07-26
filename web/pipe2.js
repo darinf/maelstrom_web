@@ -98,10 +98,14 @@ class PipeBuffer {
     var result = new Int8Array(num_bytes);
 
     if (writeOffset > readOffset) {
+      console.log("copyBytesOut single chunk");
       result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, num_bytes));
     } else {
       var first_chunk_size = this.endOffset_ - readOffset;
       var second_chunk_size = writeOffset;
+
+      console.log("copyBytesOut: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
+
       if (first_chunk_size > 0)
         result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, first_chunk_size));
       if (second_chunk_size > 0)
@@ -139,11 +143,14 @@ class PipeBuffer {
     var int8 = new Int8Array(this.sab_, PipeBuffer.kHeaderSize, this.endOffset_);
 
     if (readOffset > writeOffset || bytes_to_copy < (this.endOffset_ - writeOffset)) {
+      console.log("copyBytesIn: single chunk");
       int8.set(bytes, writeOffset);
       Atomics.store(this.int32_, PipeBuffer.kWriteOffset, writeOffset + bytes_to_copy);
     } else {
       var first_chunk_size = this.endOffset_ - writeOffset;
       var second_chunk_size = bytes_to_copy - first_chunk_size;
+
+      console.log("copyBytesIn: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
 
       if (first_chunk_size > 0)
         int8.set(new Int8Array(bytes.buffer, bytes.byteOffset, first_chunk_size), writeOffset);
@@ -273,6 +280,7 @@ class MessagePipeReader {
 
     var next_offset = 0;
     for (;;) {
+      // Do we have enough to read the message size?
       if ((int8.byteLength - next_offset) < 4)
         break;
 
@@ -281,17 +289,25 @@ class MessagePipeReader {
       var int32 = new Int32Array(buf.buffer);
 
       var message_size = int32[0];
+      var aligned_message_size = this.computeAlignedLength_(message_size);
 
-      if ((int8.byteLength - next_offset - 4) < message_size)
+      console.log("received message, size=" + message_size);
+
+      // Do we have a complete message (including alignment padding)?
+      if ((int8.byteLength - next_offset - 4) < aligned_message_size)
         break;
 
       var message = new Int8Array(int8.buffer, int8.byteOffset + next_offset + 4, message_size);
       this.messages_.push(message);
 
-      next_offset += (4 + message_size);
+      next_offset += (4 + aligned_message_size);
     }
 
     this.partial_ = new Int8Array(int8.buffer, int8.byteOffset + next_offset);
+  }
+
+  computeAlignedLength_(length) {
+    return (length + 3) & ~3;  // Align to multiples of 4
   }
 }
 
@@ -301,21 +317,41 @@ class MessagePipeWriter {
   }
 
   write(bytes) {  // Blocks until fully written.
+    console.log("sending message, size=" + bytes.byteLength);
+
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
     this.writer_.write(new Int8Array(int32.buffer));
     this.writer_.write(bytes);
+
+    var alignedLength = this.computeAlignedLength_(bytes.byteLength);
+    if (alignedLength > bytes.byteLength)
+      this.writer_.write(new Int8Array(bytes.byteLength - alignedLength));
   }
 
   tryWrite(bytes) {  // Returns true iff message was written.
-    if (this.writer_.spaceAvailable() < (4 + bytes.byteLength))
+    var alignedLength = this.computeAlignedLength_(bytes.byteLength);
+
+    if (this.writer_.spaceAvailable() < (4 + alignedLength))
       return false;
+
+    console.log("sending message, size=" + bytes.byteLength);
+
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
     if (this.writer_.tryWrite(new Int8Array(int32.buffer)) != 4)
       throw "oops";
     if (this.writer_.tryWrite(bytes) != bytes.byteLength)
       throw "oops";
+    if (alignedLength > bytes.byteLength) {
+      var paddingLength = bytes.byteLength - alignedLength;
+      if (this.writer_.tryWrite(new Int8Array(paddingLength)) != paddingLength)
+        throw "oops";
+    }
     return true;
+  }
+
+  computeAlignedLength_(length) {
+    return (length + 3) & ~3;  // Align to multiples of 4
   }
 }
