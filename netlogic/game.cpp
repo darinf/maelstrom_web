@@ -762,8 +762,10 @@ static void DoGameOver(void)
 	sound->PlaySound(gGameOver, 5);
 	screen->Fade();
 
+#ifdef SOUND_WORKS
 	while( sound->Playing() )
 		Delay(SOUND_DELAY);
+#endif
 
 	/* -- See if they got a high score */
 	LoadScores();
@@ -864,8 +866,10 @@ static void DoGameOver(void)
 	if ( gNumPlayers > 1 )	/* Let them watch their ranking */
 		SDL_Delay(3000);
 
+#ifdef SOUND_WORKS
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
+#endif
 	HandleEvents(0);
 
 	screen->Fade();
@@ -920,8 +924,10 @@ static void DoBonus(void)
 
 	/* Fade in */
 	screen->Fade();
+#ifdef SOUND_WORKS
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
+#endif
 
 	/* -- Count the score down */
 	x = xs;
@@ -969,8 +975,10 @@ static void DoBonus(void)
 		Delay(SOUND_DELAY);
 		sound->PlaySound(gPrettyGood, 5);
 	}
+#ifdef SOUND_WORKS
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
+#endif
 
 	/* -- Count the score down */
 	OBJ_LOOP(i, gNumPlayers) {
@@ -983,8 +991,11 @@ static void DoBonus(void)
 		}
 
 		while (OurShip->GetBonus() > 0) {
+
+#ifdef SOUND_WORKS
 			while ( sound->Playing() )
 				Delay(SOUND_DELAY);
+#endif
 
 			sound->PlaySound(gBonk, 5);
 			if ( OurShip->GetBonus() >= 500 ) {
@@ -1010,8 +1021,10 @@ static void DoBonus(void)
 			screen->Update();
 		}
 	}
+#ifdef SOUND_WORKS
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
+#endif
 	HandleEvents(10);
 
 	/* -- Draw the "next wave" message */

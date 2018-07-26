@@ -86,6 +86,8 @@ class CanvasController {
     //if (this.eventPipeWriter_.hasPendingWrites())
     //  this.eventPipeWriter_.clearPendingWrites();
 
+    //console.log("main: sending input event: " + params);
+
     var str = JSON.stringify(params);
     if (!this.eventPipeWriter_.tryWrite(new TextEncoder().encode(str)))
       console.log("!!! dropping input event");
@@ -126,7 +128,7 @@ class CanvasController {
       var int8 = this.renderPipeReader_.tryRead();
       if (!int8)
         return;
-      var uint32 = new Uint32Array(int8.buffer, int8.byteOffset);
+      var uint32 = new Uint32Array(int8.buffer, int8.byteOffset, 4);
 
       var x = uint32[0];
       var y = uint32[1];
@@ -134,7 +136,10 @@ class CanvasController {
       var height = uint32[3];
 
       var imageData = new ImageData(
-          new Uint8ClampedArray(int8.buffer, int8.byteOffset + 4 * 4, 4 * width * height), width, height);
+          new Uint8ClampedArray(int8.buffer,
+                                int8.byteOffset + 16,
+                                width * height * 4),
+          width, height);
 
       this.drawList_.push([imageData, x, y, width, height]);
     }

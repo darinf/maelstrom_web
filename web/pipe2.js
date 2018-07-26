@@ -98,13 +98,13 @@ class PipeBuffer {
     var result = new Int8Array(num_bytes);
 
     if (writeOffset > readOffset) {
-      console.log("copyBytesOut single chunk");
+      //console.log("copyBytesOut single chunk");
       result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, num_bytes));
     } else {
       var first_chunk_size = this.endOffset_ - readOffset;
       var second_chunk_size = writeOffset;
 
-      console.log("copyBytesOut: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
+      //console.log("copyBytesOut: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
 
       if (first_chunk_size > 0)
         result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, first_chunk_size));
@@ -143,14 +143,14 @@ class PipeBuffer {
     var int8 = new Int8Array(this.sab_, PipeBuffer.kHeaderSize, this.endOffset_);
 
     if (readOffset > writeOffset || bytes_to_copy < (this.endOffset_ - writeOffset)) {
-      console.log("copyBytesIn: single chunk");
-      int8.set(bytes, writeOffset);
+      //console.log("copyBytesIn: single chunk");
+      int8.set(new Int8Array(bytes.buffer, bytes.byteOffset, bytes_to_copy), writeOffset);
       Atomics.store(this.int32_, PipeBuffer.kWriteOffset, writeOffset + bytes_to_copy);
     } else {
       var first_chunk_size = this.endOffset_ - writeOffset;
       var second_chunk_size = bytes_to_copy - first_chunk_size;
 
-      console.log("copyBytesIn: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
+      //console.log("copyBytesIn: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
 
       if (first_chunk_size > 0)
         int8.set(new Int8Array(bytes.buffer, bytes.byteOffset, first_chunk_size), writeOffset);
@@ -268,11 +268,14 @@ class MessagePipeReader {
   }
 
   ingest_(input) {
+    var old_partial;
+
     var int8;
     if (this.partial_) {
       int8 = new Int8Array(input.byteLength + this.partial_.byteLength);
       int8.set(this.partial_);
       int8.set(input, this.partial_.byteLength);
+      old_partial = this.partial_;
       this.partial_ = null;
     } else {
       int8 = input;
@@ -291,7 +294,11 @@ class MessagePipeReader {
       var message_size = int32[0];
       var aligned_message_size = this.computeAlignedLength_(message_size);
 
-      console.log("received message, size=" + message_size);
+      if (message_size < 0) {
+        console.log("oops: message_size is negative: " + message_size);
+      }
+
+      //console.log("received message, size=" + message_size);
 
       // Do we have a complete message (including alignment padding)?
       if ((int8.byteLength - next_offset - 4) < aligned_message_size)
@@ -303,7 +310,8 @@ class MessagePipeReader {
       next_offset += (4 + aligned_message_size);
     }
 
-    this.partial_ = new Int8Array(int8.buffer, int8.byteOffset + next_offset);
+    if (int8.byteLength > next_offset)
+      this.partial_ = new Int8Array(int8.buffer, int8.byteOffset + next_offset);
   }
 
   computeAlignedLength_(length) {
@@ -317,7 +325,7 @@ class MessagePipeWriter {
   }
 
   write(bytes) {  // Blocks until fully written.
-    console.log("sending message, size=" + bytes.byteLength);
+    //console.log("sending message, size=" + bytes.byteLength);
 
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
@@ -335,7 +343,7 @@ class MessagePipeWriter {
     if (this.writer_.spaceAvailable() < (4 + alignedLength))
       return false;
 
-    console.log("sending message, size=" + bytes.byteLength);
+    //console.log("sending message, size=" + bytes.byteLength);
 
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
@@ -344,7 +352,7 @@ class MessagePipeWriter {
     if (this.writer_.tryWrite(bytes) != bytes.byteLength)
       throw "oops";
     if (alignedLength > bytes.byteLength) {
-      var paddingLength = bytes.byteLength - alignedLength;
+      var paddingLength = alignedLength - bytes.byteLength;
       if (this.writer_.tryWrite(new Int8Array(paddingLength)) != paddingLength)
         throw "oops";
     }

@@ -51,6 +51,8 @@ void AudioCallback(void* sample_buffer,
 }  // namespace
 #endif
 
+static SDL_AudioSpec* g_spec = nullptr;
+
 int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
   fprintf(stderr, "Unimplemented: SDL_OpenAudio [channels=%u, format=%u, size=%u, samples=%u, freq=%u, callback=%p]\n",
       spec->channels, spec->format, spec->size, spec->samples, spec->freq, spec->callback);
@@ -92,11 +94,12 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
   ppb.core->ReleaseResource(audio_config);
   return 0;
 #endif
-  return -1;
+  
+  g_spec = spec;
+  return 0;
 }
 
 void SDL_CloseAudio() {
-  fprintf(stderr, "Unimplemented: SDL_CloseAudio\n");
 #if 0
   ppb.core->ReleaseResource(g_audio);
   g_audio = 0;
@@ -105,10 +108,11 @@ void SDL_CloseAudio() {
   g_buffer = NULL;
   g_buffer_size = 0;
 #endif
+  
+  g_spec = nullptr;
 }
 
 void SDL_PauseAudio(int pause) {
-  fprintf(stderr, "Unimplemented: SDL_PauseAudio(%d)\n", pause);
 #if 0
   if (pause) {
     ppb.audio->StopPlayback(g_audio);
@@ -116,6 +120,10 @@ void SDL_PauseAudio(int pause) {
     ppb.audio->StartPlayback(g_audio);
   }
 #endif
+
+  if (!pause) {
+    // Run callback until done.
+  }
 }
 
 void* SDL_LoadWAV(const char* wavefile, SDL_AudioSpec*, Uint8** samples, Uint32* num_samples) { return 0; }

@@ -161,6 +161,8 @@ function setCurrentEvent(int8) {
   }
 
   currentEvent = {type: type, code: data[1]};
+
+  //console.log("worker: set current event [type=" + type + ", code=" + data[1] + "]");
 }
 
 function worker_get_event_type() {
