@@ -98,13 +98,10 @@ class PipeBuffer {
     var result = new Int8Array(num_bytes);
 
     if (writeOffset > readOffset) {
-      //console.log("copyBytesOut single chunk");
       result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, num_bytes));
     } else {
       var first_chunk_size = this.endOffset_ - readOffset;
       var second_chunk_size = writeOffset;
-
-      //console.log("copyBytesOut: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
 
       if (first_chunk_size > 0)
         result.set(new Int8Array(this.sab_, PipeBuffer.kHeaderSize + readOffset, first_chunk_size));
@@ -143,14 +140,11 @@ class PipeBuffer {
     var int8 = new Int8Array(this.sab_, PipeBuffer.kHeaderSize, this.endOffset_);
 
     if (readOffset > writeOffset || bytes_to_copy < (this.endOffset_ - writeOffset)) {
-      //console.log("copyBytesIn: single chunk");
       int8.set(new Int8Array(bytes.buffer, bytes.byteOffset, bytes_to_copy), writeOffset);
       Atomics.store(this.int32_, PipeBuffer.kWriteOffset, writeOffset + bytes_to_copy);
     } else {
       var first_chunk_size = this.endOffset_ - writeOffset;
       var second_chunk_size = bytes_to_copy - first_chunk_size;
-
-      //console.log("copyBytesIn: two chunks: first=" + first_chunk_size + ", second=" + second_chunk_size);
 
       if (first_chunk_size > 0)
         int8.set(new Int8Array(bytes.buffer, bytes.byteOffset, first_chunk_size), writeOffset);
@@ -287,18 +281,9 @@ class MessagePipeReader {
       if ((int8.byteLength - next_offset) < 4)
         break;
 
-      var buf = new Int8Array(4);
-      buf.set(new Int8Array(int8.buffer, int8.byteOffset + next_offset, 4));
-      var int32 = new Int32Array(buf.buffer);
-
+      var int32 = new Int32Array(int8.buffer, int8.byteOffset + next_offset, 1);
       var message_size = int32[0];
       var aligned_message_size = this.computeAlignedLength_(message_size);
-
-      if (message_size < 0) {
-        console.log("oops: message_size is negative: " + message_size);
-      }
-
-      //console.log("received message, size=" + message_size);
 
       // Do we have a complete message (including alignment padding)?
       if ((int8.byteLength - next_offset - 4) < aligned_message_size)
@@ -325,8 +310,6 @@ class MessagePipeWriter {
   }
 
   write(bytes) {  // Blocks until fully written.
-    //console.log("sending message, size=" + bytes.byteLength);
-
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
     this.writer_.write(new Int8Array(int32.buffer));
@@ -342,8 +325,6 @@ class MessagePipeWriter {
 
     if (this.writer_.spaceAvailable() < (4 + alignedLength))
       return false;
-
-    //console.log("sending message, size=" + bytes.byteLength);
 
     var int32 = new Int32Array(1);
     int32[0] = bytes.byteLength;
