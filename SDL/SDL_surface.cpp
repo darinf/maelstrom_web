@@ -53,6 +53,7 @@ void ReadBitmapHeader(SDL_RWops* ops, BMPFileHeader* header) {
   header->num_important_colors  = SDL_ReadLE32(ops);
 }
 
+#if 0
 void DumpBitmapHeader(BMPFileHeader* header) {
 #define DUMP(field) mesg(#field ": %u", (uint32_t) header->field)
   DUMP(type);
@@ -72,6 +73,7 @@ void DumpBitmapHeader(BMPFileHeader* header) {
   DUMP(num_important_colors);
 #undef DUMP 
 }
+#endif
 
 inline Uint32 PitchFromWidth(Sint32 w) {
   return (w + 3) & ~3;
@@ -182,7 +184,6 @@ Uint8 Index1PixelAt(const Uint8* row_start, int x) {
 //----
 
 Index8Impl* video_surface = NULL;
-//XXX PP_Resource graphics_2d = 0;
 
 }  // namespace
 
@@ -206,15 +207,6 @@ SDL_Surface* SDL_SetVideoMode(int width, int height, int depth, int video_flags)
     error("height: must be a positive value!");
     return NULL;
   }
-
-#if 0
-  PP_Size size;
-  size.width = width;
-  size.height = height;
-  graphics_2d = ppb.graphics_2d->Create(g_instance, &size, PP_TRUE);
-
-  ppb.instance->BindGraphics(g_instance, graphics_2d);
-#endif
 
   jslib_canvas_init(width, height);
 
@@ -364,8 +356,6 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     return;
   }
 
-  //XXX PP_ImageDataFormat image_format = ppb.image_data->GetNativeImageDataFormat();
-
   for (int i = 0; i < num_rects; ++i) {
     int size_width = rects[i].w;
     int size_height = rects[i].h;
@@ -373,15 +363,6 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     // Skip empty rects.
     if (!size_width || !size_height)
       continue;
-
-    //XXX PP_Resource image_data = ppb.image_data->Create(
-    //XXX     g_instance,
-    //XXX     image_format,
-    //XXX     &size,
-    //XXX     PP_FALSE);
-
-    //XXX PP_ImageDataDesc image_desc;
-    //XXX ppb.image_data->Describe(image_data, &image_desc);
 
     struct ImageDesc {
       struct Size {
@@ -395,8 +376,7 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
     image_desc.size.height = size_height;
     image_desc.stride = size_width * 4;  // num bytes to next row
 
-    void* image_pixels = malloc(image_desc.size.height * image_desc.stride); //XXX ppb.image_data->Map(image_data);
-    Uint32* image_pixels_end = (Uint32*) (((Uint8*) image_pixels) + image_desc.size.height * image_desc.stride);
+    void* image_pixels = malloc(image_desc.size.height * image_desc.stride);
 
     //mesg("about to copy pixels [size=(%u,%u), stride=%u, pixels=%p]", image_desc.size.width, image_desc.size.height, image_desc.stride, image_pixels);
 
@@ -411,53 +391,18 @@ void SDL_UpdateRects(SDL_Surface* surface, int num_rects, SDL_Rect* rects) {
         Uint8 index = src_pixels[col];
         SDL_Color color = surface->format->palette->colors[index];
 
-        Uint32 packed_color;
-        /*
-        switch (image_format) {
-          case PP_IMAGEDATAFORMAT_BGRA_PREMUL:
-          */
-            // RGBA
-            packed_color = color.r | (color.g << 8) | (color.b << 16) | 0xFF000000;
-            /*
-            break;
-          default:
-            error("Oops: need code for image format!");
-            return;
-        }
-        */
+        Uint32 packed_color = color.r | (color.g << 8) | (color.b << 16) | 0xFF000000;
 
-        // XXX
         //mesg("writing dst_pixels [row=%d, col=%d]", row, col);
         Uint32* dst_ptr = reinterpret_cast<Uint32*>(dst_pixels + (4 * col));
         *dst_ptr = packed_color;
       }
     }
 
-    // Now, flush to display
-    //XXX PP_Point top_left;
-    //XXX top_left.x = rects[i].x;
-    //XXX top_left.y = rects[i].y;
-    //mesg("PaintImageData(x=%u,y=%u,w=%u,h=%u)", rects[i].x, rects[i].y, rects[i].w, rects[i].h);
-    //XXX ppb.graphics_2d->PaintImageData(graphics_2d, image_data, &top_left, NULL);
-    
     jslib_canvas_draw(image_pixels, rects[i].x, rects[i].y, rects[i].w, rects[i].h);
-
-    //XXX ppb.image_data->Unmap(image_data);
-    //XXX ppb.core->ReleaseResource(image_data);
 
     free(image_pixels);
   }
-
-  //static PP_TimeTicks last_flush_end = 0.0;
-  //PP_TimeTicks start = ppb.core->GetTimeTicks();
-
-  //XXX ppb.graphics_2d->Flush(graphics_2d, PP_BlockUntilComplete());
-
-  //PP_TimeTicks end = ppb.core->GetTimeTicks();
-  //PP_TimeDelta delta_this = 1000.0 * (end - start);
-  //PP_TimeDelta delta_last = 1000.0 * (end - last_flush_end);
-  //last_flush_end = end;
-  //mesg("Flushed [%0.0f %0.0f %0.2f]", delta_this, delta_last, delta_last - delta_this);
 }
 
 SDL_Surface* SDL_LoadBMP(const char* path) {

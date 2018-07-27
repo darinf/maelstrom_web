@@ -8,19 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-//XXX #include <ppapi/c/ppb_input_event.h>
 #include "myerror.h"
-//XXX #include "ppb.h"
-//XXX #include "pp_resource_queue.h"
-
-#if 0
-struct LinkedEvent {
-  LinkedEvent* next;
-  SDL_Event data;
-};
-
-static LinkedEvent* next_event = NULL;
-#endif
 
 static int ToUnicode(uint32_t key_code) {
   // NOTE: We should really handle PP_INPUTEVENT_TYPE_CHAR instead,
@@ -48,15 +36,19 @@ static int ToUnicode(uint32_t key_code) {
   return 0;
 }
 
-static void BuildEvent(int type, int key_code, SDL_Event* event) {
+static void BuildEvent(int type, int code, int x, int y, SDL_Event* event) {
   event->type = (Uint32) type;
-  event->key.keysym.sym = (SDLKey) key_code;
+  event->key.keysym.sym = (SDLKey) code;
   event->key.keysym.mod = 0;
-  event->key.keysym.unicode = ToUnicode(key_code);
+  event->key.keysym.unicode = ToUnicode(code);
   if (event->type == SDL_KEYDOWN) {
     event->key.state = SDL_PRESSED;
   } else if (event->type == SDL_KEYUP) {
     event->key.state = SDL_RELEASED;
+  } else if (event->type == SDL_MOUSEBUTTONDOWN) {
+    event->button.button = 1;
+    event->button.x = x;
+    event->button.x = y;
   }
 }
 
@@ -67,101 +59,16 @@ static void ReadEvent(SDL_Event* event) {
   int code = EM_ASM_INT({
     return worker_get_event_code();
   });
-  //mesg("ReadEvent: type=%d code=%d\n", type, code);
-  BuildEvent(type, code, event);
+  int x = EM_ASM_INT({
+    return worker_get_event_x();
+  });
+  int y = EM_ASM_INT({
+    return worker_get_event_y();
+  });
+  BuildEvent(type, code, x, y, event);
 }
-
-#if 0
-extern "C" void EMSCRIPTEN_KEEPALIVE Maelstrom_OnInputEvent(int type, int key_code) {
-  LinkedEvent* event = new LinkedEvent();
-  event->next = NULL;
-  event->data.type = (Uint32) type;
-  event->data.key.keysym.sym = (SDLKey) key_code;
-  event->data.key.keysym.mod = 0;
-  event->data.key.keysym.unicode = ToUnicode(key_code);
-  if (event->data.type == SDL_KEYDOWN) {
-    event->data.key.state = SDL_PRESSED;
-  } else if (event->data.type == SDL_KEYUP) {
-    event->data.key.state = SDL_RELEASED;
-  }
-
-  // Append to linked list
-  if (next_event) {
-    // Find last, and make this new event the last.
-    LinkedEvent* last = next_event;
-    while (last->next)
-      last = last->next;
-    last->next = event;
-  } else {
-    next_event = event;
-  }
-}
-#endif
-
-#if 0
-extern PPResourceQueue g_input_queue;
-
-static bool TranslateEvent(PP_Resource input_event, SDL_Event* result) {
-  bool translated = true;
-
-  PP_InputEvent_Type input_event_type = ppb.input_event->GetType(input_event);
-
-  switch (input_event_type) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-      PP_Point position = ppb.mouse_input_event->GetPosition(input_event);
-      //mesg("mousedown [x=%u, y=%u]", position.x, position.y);
-      result->type = SDL_MOUSEBUTTONDOWN;
-      result->button.button = 1;
-      result->button.x = position.x;
-      result->button.y = position.y;
-      break;
-    }
-    case PP_INPUTEVENT_TYPE_KEYDOWN: {
-      uint32_t key_code = ppb.keyboard_input_event->GetKeyCode(input_event);
-      //mesg("keydown [key_code=%u]", key_code);
-      result->type = SDL_KEYDOWN;
-      result->key.state = SDL_PRESSED;
-      result->key.keysym.sym = key_code;
-      result->key.keysym.mod = 0;
-      result->key.keysym.unicode = ToUnicode(key_code, input_event);
-      break;
-    }
-    case PP_INPUTEVENT_TYPE_KEYUP: {
-      uint32_t key_code = ppb.keyboard_input_event->GetKeyCode(input_event);
-      //mesg("keyup [key_code=%u]", key_code);
-      result->type = SDL_KEYUP;
-      result->key.state = SDL_RELEASED;
-      result->key.keysym.sym = key_code;
-      result->key.keysym.mod = 0;
-      result->key.keysym.unicode = ToUnicode(key_code, input_event);
-      break;
-    }
-    default:
-      //mesg("unknown input event");
-      translated = false;
-      break;
-  }
-  return translated;
-}
-#endif
 
 int SDL_PollEvent(SDL_Event* event) { 
-/*
-  if (!event)
-    return next_event ? 1 : 0;
-
-  if (!next_event)
-    return 0;
-
-  LinkedEvent* temp = next_event;
-  next_event = temp->next;
-
-  memcpy(event, &temp->data, sizeof(SDL_Event));
-  delete temp;
-
-  return 1;
-*/
-
   int has_event = EM_ASM_INT({
     return worker_poll_event();
   });

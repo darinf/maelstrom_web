@@ -9,12 +9,6 @@ mergeInto(LibraryManager.library, {
     var numBytes = width * height * 4;
     var mappedPixels = new Uint8Array(Module.HEAPU8.buffer, pixelsPtr, numBytes);
 
-    /*
-    var buffer = new ArrayBuffer(numBytes);
-    var mappedBuffer = new Uint8Array(buffer);
-    mappedBuffer.set(mappedPixels);
-    */
-
     worker_draw(mappedPixels, x, y, width, height);
   },
 });

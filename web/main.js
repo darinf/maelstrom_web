@@ -31,11 +31,11 @@ class CanvasController {
     this.drawList_ = new Array();
 
     this.eventPipe_ = new PipeBuffer();
-    this.eventPipe_.initialize(4096);  // XXX
+    this.eventPipe_.initialize(4096);
     this.eventPipeWriter_ = new MessagePipeWriter(this.eventPipe_);
 
     this.renderPipe_ = new PipeBuffer();
-    this.renderPipe_.initialize(  // TODO: find a better way to do this
+    this.renderPipe_.initialize(
         (4 * 4) +          // x, y, width, height
         (640 * 480 * 4) +  // max canvas size
         (256));            // extra buffer for message framing
@@ -56,15 +56,10 @@ class CanvasController {
   // Commands from the worker:
 
   do_draw() {
-    //console.log("do_draw");
-
     this.updateDrawList_();
 
-    if (this.drawList_.length > 0) {
+    if (this.drawList_.length > 0)
       this.animator_.schedule();
-    } else {
-      //console.log("Warning: nothing to draw in do_draw().");
-    }
   }
 
   // Private methods:
@@ -74,53 +69,27 @@ class CanvasController {
   }
 
   onHandleInputEvent_(e) {
-    //console.log(e.type + ": " + e.keyCode);
     var params = [e.type];
     if (e.type == "keydown" || e.type == "keyup") {
       params.push(e.keyCode);
     }
-    //XXX this.worker_.postMessage({command: "input", params: params}, []);
-
-    // Overwrite
-    //XXX this.eventPipeWriter_.doPendingWrites();
-    //if (this.eventPipeWriter_.hasPendingWrites())
-    //  this.eventPipeWriter_.clearPendingWrites();
-
-    //console.log("main: sending input event: " + params);
 
     var str = JSON.stringify(params);
     if (!this.eventPipeWriter_.tryWrite(new TextEncoder().encode(str)))
       console.log("!!! dropping input event");
 
-/*
-    if (this.eventPipeWriter_.hasPendingWrites()) {
-      console.log("!!! deferring input event");
-      setTimeout(this.onFlushPendingEvents_.bind(this), 0);
-    }
-*/
-
     e.preventDefault();
   }
 
-  onFlushPendingEvents_() {
-    //XXX this.eventPipeWriter_.doPendingWrites();
-  }
-
   onDraw_() {
-    //XXX this.eventPipeWriter_.doPendingWrites();
-
     this.updateDrawList_();
     while (this.drawList_.length > 0)
       this.drawImage_.apply(this, this.drawList_.shift());
   }
 
   drawImage_(imageData, x, y, width, height) {
-    if (!suppressDraw) {
-      //XXX var imageData = new ImageData(new Uint8ClampedArray(buffer), width, height);
+    if (!suppressDraw)
       this.renderingContext_.putImageData(imageData, x, y, 0, 0, width, height);
-    }
-
-    //XXX this.worker_.postMessage({command: "reclaim", params: [buffer]}, [buffer]);
   }
 
   updateDrawList_() {

@@ -1,8 +1,6 @@
 #ifndef SDL_types_h_
 #define SDL_types_h_
 
-/* placeholder */
-
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 typedef unsigned int Uint32;

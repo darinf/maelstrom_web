@@ -4,15 +4,6 @@ var eventPipeReader;
 var renderPipeWriter;
 var currentEvent;
 
-const kViewportWidth = 640;
-const kViewportHeight = 480;
-
-function sleep(msec) {
-  var sab = new SharedArrayBuffer(4);
-  var int32 = new Int32Array(sab);
-  Atomics.wait(int32, 0, 0, msec);
-}
-
 var Module = {
   preRun: [
     function() {
@@ -120,9 +111,7 @@ function createBuffer(size) {
 }
 
 function worker_draw(pixels, x, y, width, height) {
-  //console.log("draw called: [" + x + ", " + y + ", " + width + ", " + height + "]");
-
-  // TODO: reduce copies here by direct accessing the pipe buffer.
+  // TODO: is there a way to avoid this extra copy?
 
   var uint32 = new Uint32Array(4 + width * height);
   uint32[0] = x;
@@ -132,14 +121,6 @@ function worker_draw(pixels, x, y, width, height) {
   uint32.set(new Uint32Array(pixels.buffer, pixels.byteOffset, width * height), 4);
 
   renderPipeWriter.write(new Int8Array(uint32.buffer));
-
-  /*
-  // Flush writes
-  while (renderPipeWriter.hasPendingWrites()) {
-    sleep(1);
-    renderPipeWriter.doPendingWrites();
-  }
-  */
 
   postMessage({command: "do_draw", params:[]});
 }
@@ -161,8 +142,6 @@ function setCurrentEvent(int8) {
   }
 
   currentEvent = {type: type, code: data[1]};
-
-  //console.log("worker: set current event [type=" + type + ", code=" + data[1] + "]");
 }
 
 function worker_get_event_type() {
@@ -171,6 +150,14 @@ function worker_get_event_type() {
 
 function worker_get_event_code() {
   return currentEvent.code;
+}
+
+function worker_get_event_x() {
+  return 0;  // XXX
+}
+
+function worker_get_event_y() {
+  return 0;  // XXX
 }
 
 function worker_poll_event() {
@@ -197,18 +184,10 @@ function start(eventPipeSAB, renderPipeSAB) {
   renderPipe.initializeFromSAB(renderPipeSAB);
   renderPipeWriter = new MessagePipeWriter(renderPipe);
 
-/*
-  if (renderPipe.maxBytes != ((4 * 4) + (kViewportWidth * kViewportHeight * 4)))
-    throw "Oops! unexpected render pipe max bytes: " + renderPipe.maxBytes;
-*/
-
-  console.log("fetching maelstrom.wasm...");
-
   fetch("maelstrom.wasm", {credentials: "include"}).then(function(response) {
     response.arrayBuffer().then(function(buffer) {
       Module["wasmBinary"] = buffer;
       importScripts("maelstrom.js");
-      console.log("done importing maelstrom.js");
     });
   });
 }
