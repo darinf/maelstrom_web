@@ -113,7 +113,8 @@ class PipeBuffer {
     Atomics.store(this.int32_, PipeBuffer.kReadOffset, writeOffset);
 
     // Unblock waitForSpace().
-    Atomics.wake(this.int32_, PipeBuffer.kReadOffset, 1);
+    (Atomics.notify ? Atomics.notify : Atomics.wake)(
+        this.int32_, PipeBuffer.kReadOffset, 1);
 
     return result;
   }
@@ -154,7 +155,8 @@ class PipeBuffer {
     }
 
     // Unblock waitForData().
-    Atomics.wake(this.int32_, PipeBuffer.kWriteOffset, 1);
+    (Atomics.notify ? Atomics.notify : Atomics.wake)(
+        this.int32_, PipeBuffer.kWriteOffset, 1);
 
     return bytes_to_copy;
   }
