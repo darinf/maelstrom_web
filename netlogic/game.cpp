@@ -6,6 +6,8 @@
 #include "make.h"
 #include "load.h"
 
+//#define WAIT_FOR_SOUND 1
+
 
 #ifdef MOVIE_SUPPORT
 extern int gMovie;
@@ -762,7 +764,7 @@ static void DoGameOver(void)
 	sound->PlaySound(gGameOver, 5);
 	screen->Fade();
 
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 	while( sound->Playing() )
 		Delay(SOUND_DELAY);
 #endif
@@ -866,7 +868,7 @@ static void DoGameOver(void)
 	if ( gNumPlayers > 1 )	/* Let them watch their ranking */
 		SDL_Delay(3000);
 
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
 #endif
@@ -924,7 +926,7 @@ static void DoBonus(void)
 
 	/* Fade in */
 	screen->Fade();
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
 #endif
@@ -975,7 +977,7 @@ static void DoBonus(void)
 		Delay(SOUND_DELAY);
 		sound->PlaySound(gPrettyGood, 5);
 	}
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
 #endif
@@ -992,7 +994,7 @@ static void DoBonus(void)
 
 		while (OurShip->GetBonus() > 0) {
 
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 			while ( sound->Playing() )
 				Delay(SOUND_DELAY);
 #endif
@@ -1021,7 +1023,7 @@ static void DoBonus(void)
 			screen->Update();
 		}
 	}
-#ifdef SOUND_WORKS
+#ifdef WAIT_FOR_SOUND
 	while ( sound->Playing() )
 		Delay(SOUND_DELAY);
 #endif

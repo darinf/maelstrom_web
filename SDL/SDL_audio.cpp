@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "myerror.h"
+
 #if 0
 #include "ppb.h"
 
@@ -54,7 +56,7 @@ void AudioCallback(void* sample_buffer,
 static SDL_AudioSpec* g_spec = nullptr;
 
 int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
-  fprintf(stderr, "Unimplemented: SDL_OpenAudio [channels=%u, format=%u, size=%u, samples=%u, freq=%u, callback=%p]\n",
+  mesg("SDL_OpenAudio [channels=%u, format=%u, size=%u, samples=%u, freq=%u, callback=%p]\n",
       spec->channels, spec->format, spec->size, spec->samples, spec->freq, spec->callback);
 #if 0
   if (spec->freq != 11025) {
@@ -100,6 +102,8 @@ int SDL_OpenAudio(SDL_AudioSpec* spec, SDL_AudioSpec* obtained) {
 }
 
 void SDL_CloseAudio() {
+  mesg("SDL_CloseAudio\n");
+
 #if 0
   ppb.core->ReleaseResource(g_audio);
   g_audio = 0;
@@ -113,17 +117,31 @@ void SDL_CloseAudio() {
 }
 
 void SDL_PauseAudio(int pause) {
-#if 0
-  if (pause) {
-    ppb.audio->StopPlayback(g_audio);
-  } else {
-    ppb.audio->StartPlayback(g_audio);
-  }
-#endif
+  mesg("SDL_PauseAudio(%d)\n", pause);
 
+#if 0
   if (!pause) {
     // Run callback until done.
+    mesg("capturing audio samples ...\n");
+    for (;;) {
+      Uint8 buffer[256];
+      g_spec->callback(g_spec->userdata, buffer, sizeof(buffer));
+
+      // If all samples are the same, then we are done.
+      bool matches = true;
+      Uint8 first = buffer[0];
+      for (size_t i = 1; i < sizeof(buffer); ++i) {
+        if (buffer[i] != first) {
+          matches = false;
+          break;
+        }
+      }
+      if (matches)
+        break;
+    }
+    mesg("... done capturing audio samples\n");
   }
+#endif
 }
 
 void* SDL_LoadWAV(const char* wavefile, SDL_AudioSpec*, Uint8** samples, Uint32* num_samples) { return 0; }

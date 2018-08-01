@@ -48,7 +48,7 @@ static void BuildEvent(int type, int code, int x, int y, SDL_Event* event) {
   } else if (event->type == SDL_MOUSEBUTTONDOWN) {
     event->button.button = 1;
     event->button.x = x;
-    event->button.x = y;
+    event->button.y = y;
   }
 }
 

@@ -27,6 +27,10 @@
 #include "Mac_Sound.h"
 #include "Mac_Compat.h"
 
+#include "jslib/audio.h"
+
+//#define DEBUG_SOUND 1
+
 static int bogus_running = 0;
 
 extern "C" {
@@ -191,6 +195,8 @@ Sound:: Volume(Uint8 vol)
 		vol = MAX_VOLUME;
 	volume = vol;
 
+  jslib_audio_set_volume((float)vol / MAX_VOLUME);
+
 	if ( active && (volume == 0) ) {
 		if ( playing )
 			SDL_CloseAudio();
@@ -220,14 +226,19 @@ Sound:: PlaySound(Uint16 sndID, Uint8 priority, Uint8 channel,
 	if ( wave == NULL )
 		return(-1);
 
+#if 0
 	channels[channel].ID = sndID;
 	channels[channel].priority = priority;
 	channels[channel].len = wave->DataLeft();
 	channels[channel].src = wave->Data();
 	channels[channel].callback = callback;
+#endif
+
 #ifdef DEBUG_SOUND
 printf("Playing sound %hu on channel %d\n", sndID, channel);
 #endif
+
+  jslib_audio_play(wave->Data(), wave->DataLeft());
 	return(0);
 }
 

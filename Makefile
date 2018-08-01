@@ -71,6 +71,7 @@ SOURCES= \
 	$(NULL)
 
 JS_LIBS= \
+	jslib/audio.js \
 	jslib/canvas.js \
 	$(NULL)
 

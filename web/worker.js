@@ -1,5 +1,7 @@
 importScripts("pipe2.js");
 
+console.log("AudioContext=" + this.AudioContext);
+
 var eventPipeReader;
 var renderPipeWriter;
 var currentEvent;
@@ -125,6 +127,15 @@ function worker_draw(pixels, x, y, width, height) {
   postMessage({command: "do_draw", params:[]});
 }
 
+function worker_play_sound(samples) {
+  //console.log("worker_play_sounds: N=" + samples.byteLength);
+  postMessage({command: "do_sound", params:[samples.buffer, samples.byteLength]}, [samples.buffer]);
+}
+
+function worker_set_volume(volume) {
+  postMessage({command: "do_set_volume", params:[volume]});
+}
+
 function setCurrentEvent(int8) {
   var json = new TextDecoder('utf-8').decode(int8);
   var data = JSON.parse(json);
@@ -137,11 +148,14 @@ function setCurrentEvent(int8) {
     case "keyup":
       type = 2;  // SDL_KEYUP
       break;
+    case "mousedown":
+      type = 3;  // SDL_MOUSEBUTTONDOWN
+      break;
     default:
       throw "oops: unknown event type [" + data[0] + "]";
   }
 
-  currentEvent = {type: type, code: data[1]};
+  currentEvent = {type: type, code: data[1], x: data[2], y: data[3]};
 }
 
 function worker_get_event_type() {
@@ -153,11 +167,11 @@ function worker_get_event_code() {
 }
 
 function worker_get_event_x() {
-  return 0;  // XXX
+  return currentEvent.x;
 }
 
 function worker_get_event_y() {
-  return 0;  // XXX
+  return currentEvent.y;
 }
 
 function worker_poll_event() {

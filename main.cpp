@@ -430,7 +430,7 @@ void DoMainLoop() {
 		} else
 		/* -- Handle mouse clicks */
 		if ( event.type == SDL_MOUSEBUTTONDOWN ) {
-      mesg(">>> got SDL_MOUSEBUTTONDOWN\n");
+      mesg(">>> got SDL_MOUSEBUTTONDOWN (%d, %d)\n", event.button.x, event.button.y);
 			buttons.Activate_Button(event.button.x, 
 						event.button.y);
 		} else

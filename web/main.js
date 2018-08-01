@@ -29,6 +29,7 @@ class CanvasController {
     this.animator_ = new Animator(this.onDraw_.bind(this));
     this.renderingContext_ = renderingContext;
     this.drawList_ = new Array();
+    this.volume_ = 1.0;
 
     this.eventPipe_ = new PipeBuffer();
     this.eventPipe_.initialize(4096);
@@ -44,7 +45,7 @@ class CanvasController {
     this.worker_ = new Worker("worker.js");
     this.worker_.onmessage = this.onHandleMessage_.bind(this);
 
-    //window.addEventListener("mousedown", this.onHandleInputEvent_.bind(this), false);
+    window.addEventListener("mousedown", this.onHandleInputEvent_.bind(this), false);
     window.addEventListener("keydown", this.onHandleInputEvent_.bind(this), false);
     window.addEventListener("keyup", this.onHandleInputEvent_.bind(this), false);
   }
@@ -62,6 +63,30 @@ class CanvasController {
       this.animator_.schedule();
   }
 
+  do_sound(samples, numSamples) {
+    //console.log("do_sound: N=" + numSamples);
+
+    var input = new Uint8Array(samples, 0, numSamples);
+
+    var context = new window.AudioContext;
+
+    var buffer = context.createBuffer(1, numSamples, 11025);
+    var data = buffer.getChannelData(0);
+    var volume = this.volume_;
+    for (var i = 0; i < numSamples; ++i)
+      data[i] = volume * (input[i] - 128) / 128.0;
+
+    var src = context.createBufferSource();
+    src.buffer = buffer;
+    src.connect(context.destination);
+    src.start();
+  }
+  
+  do_set_volume(volume) {
+    // volume is a float between 0.0 and 1.0
+    this.volume_ = volume;
+  }
+
   // Private methods:
 
   onHandleMessage_(e) {
@@ -72,6 +97,14 @@ class CanvasController {
     var params = [e.type];
     if (e.type == "keydown" || e.type == "keyup") {
       params.push(e.keyCode);
+      params.push(0);
+      params.push(0);
+    } else if (e.type == "mousedown") {
+      params.push(0);
+
+      var canvas = document.getElementById("canvas");
+      params.push(e.x - canvas.offsetLeft);
+      params.push(e.y - canvas.offsetTop);
     }
 
     var str = JSON.stringify(params);
