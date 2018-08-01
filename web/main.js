@@ -29,6 +29,7 @@ class CanvasController {
     this.animator_ = new Animator(this.onDraw_.bind(this));
     this.renderingContext_ = renderingContext;
     this.drawList_ = new Array();
+    this.audioContext_ = null;
     this.volume_ = 1.0;
 
     this.eventPipe_ = new PipeBuffer();
@@ -68,17 +69,18 @@ class CanvasController {
 
     var input = new Uint8Array(samples, 0, numSamples);
 
-    var context = new window.AudioContext;
+    if (!this.audioContext_)
+      this.audioContext_ = new window.AudioContext;
 
-    var buffer = context.createBuffer(1, numSamples, 11025);
+    var buffer = this.audioContext_.createBuffer(1, numSamples, 11025);
     var data = buffer.getChannelData(0);
     var volume = this.volume_;
     for (var i = 0; i < numSamples; ++i)
       data[i] = volume * (input[i] - 128) / 128.0;
 
-    var src = context.createBufferSource();
+    var src = this.audioContext_.createBufferSource();
     src.buffer = buffer;
-    src.connect(context.destination);
+    src.connect(this.audioContext_.destination);
     src.start();
   }
   
