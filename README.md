@@ -25,4 +25,6 @@ From the out/pub/ directory, run a httpd server like so:
 
 Then, point your browser at http://localhost:8000/maelstrom.html.
 
-You can also try loading http://darinf.github.io/maelstrom_web/maelstrom.html.
+You can also try loading http://darinf.github.io/maelstrom_web/wasm/maelstrom.html.
+
+(An older PNaCl version is also available here: http://darinf.github.io/maelstrom_web/pnacl/maelstrom.html.)
