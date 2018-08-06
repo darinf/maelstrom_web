@@ -64,18 +64,18 @@ class CanvasController {
       this.animator_.schedule();
   }
 
-  do_sound(samples, numSamples) {
-    //console.log("do_sound: N=" + numSamples);
+  do_sound(bytes, byteOffset, byteLength) {
+    //console.log("do_sound: N=" + byteLength);
 
-    var input = new Uint8Array(samples, 0, numSamples);
+    var input = new Uint8Array(bytes, byteOffset, byteLength);
 
     if (!this.audioContext_)
       this.audioContext_ = new window.AudioContext;
 
-    var buffer = this.audioContext_.createBuffer(1, numSamples, 11025);
+    var buffer = this.audioContext_.createBuffer(1, byteLength, 11025);
     var data = buffer.getChannelData(0);
     var volume = this.volume_;
-    for (var i = 0; i < numSamples; ++i)
+    for (var i = 0; i < byteLength; ++i)
       data[i] = volume * (input[i] - 128) / 128.0;
 
     var src = this.audioContext_.createBufferSource();
