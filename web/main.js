@@ -154,6 +154,11 @@ var worker;
 var canvasController;
 
 function start() {
+  if (!this.SharedArrayBuffer) {
+    document.body.innerText = "ERROR: SharedArrayBuffer support required!";
+    return;
+  }
+
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
 
