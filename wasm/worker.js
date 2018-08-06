@@ -129,7 +129,15 @@ function worker_draw(pixels, x, y, width, height) {
 
 function worker_play_sound(samples) {
   //console.log("worker_play_sounds: N=" + samples.byteLength);
-  postMessage({command: "do_sound", params:[samples.buffer, samples.byteLength]}, [samples.buffer]);
+  postMessage({
+      command: "do_sound",
+      params:[
+          samples.buffer,
+          samples.byteOffset,
+          samples.byteLength
+      ]}, [
+          samples.buffer
+      ]);
 }
 
 function worker_set_volume(volume) {
