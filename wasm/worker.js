@@ -1,4 +1,4 @@
-importScripts("pipe2.js");
+importScripts("pipe.js");
 
 console.log("AudioContext=" + this.AudioContext);
 
