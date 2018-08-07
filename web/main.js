@@ -1,9 +1,5 @@
 var suppressDraw = false;
 
-function log(x) {
-  document.getElementById("log").innerText += x + "\n";
-}
-
 class Animator {
   constructor(closure) {
     this.closure_ = closure;
@@ -110,8 +106,10 @@ class CanvasController {
     }
 
     var str = JSON.stringify(params);
+
+    // The pipe buffer should be large enough for this to never fail ;-)
     if (!this.eventPipeWriter_.tryWrite(new TextEncoder().encode(str)))
-      console.log("!!! dropping input event");
+      console.log("!!! dropping input event");  // Increase buffer size?
 
     e.preventDefault();
   }
