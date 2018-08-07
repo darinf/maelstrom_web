@@ -46,10 +46,10 @@ which provides Futex functionality.
 
 The idea is to use SharedArrayBuffer to implement a FIFO queue for input events
 and support blocking for new input by using <code>Atomics.wait()</code>. This
-complexity is contained in the file
-<a href="blob/master/web/pipe.js">pipe.js</a>, which provides an implementation
-of a uni-directional pipe for streaming bytes and a message pipe built on top
-of that to provide uni-directional streaming of framed messages (byte arrays).
+complexity is contained in the file <a href="web/pipe.js">pipe.js</a>, which
+provides an implementation of a uni-directional pipe for streaming bytes and a
+message pipe built on top of that to provide uni-directional streaming of
+framed messages (byte arrays).
 
 With the pipe primitive, it is possible to have the main page write input
 events into the pipe, and then have the worker thread read from the other end
